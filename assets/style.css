@@ -1,0 +1,5 @@
+.home-cards:hover {
+  background-color: #bbdda6;
+  transform: scale(1.05);
+  transition: 0.5s;
+}
