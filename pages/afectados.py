@@ -3,6 +3,12 @@ import pandas as pd
 from dash import Input, Output, State, callback, dash_table, dcc, html
 from flask import session  # , current_app
 
+
+dash.register_page(__name__, path="/afectados", name="Afectados")
+
+layout = html.Div(id="afectados-content")
+
+
 global dummy_data
 dummy_data = [
     {
@@ -112,9 +118,7 @@ def search_afectado(name, ubi, nec, dni, tlf):
     return pd.DataFrame(matches_list)
 
 
-dash.register_page(__name__, path="/afectados", name="Afectados")
 
-layout = html.Div(id="afectados-content")
 
 
 @callback(Output("afectados-content", "children"), Input("url", "pathname"))

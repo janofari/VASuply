@@ -21,7 +21,7 @@ app = dash.Dash(
 )
 app.title = "VASupply"
 
-BasicAuth(app, auth_func=validate_user)
+# BasicAuth(app, auth_func=validate_user)
 
 server = app.server
 app.server.secret_key = os.urandom(24).hex()

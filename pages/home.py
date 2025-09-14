@@ -49,7 +49,6 @@ card_enseres = html.A(
 
 layout = html.Div(
     [
-        dcc.Location(id="url", refresh=False),
         html.H1("Bienvenido a VASupply", style={"textAlign": "center"}),
         html.H2(
             "Selecciona tu acción",
