@@ -3,3 +3,18 @@
   transform: scale(1.05);
   transition: 0.5s;
 }
+
+.enseres-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.enseres-form-row > * {
+  min-width: 120px;
+  flex: 1 1 120px;
+}
+.enseres-form-row .dash-dropdown {
+  min-width: 140px;
+}

@@ -20,6 +20,29 @@ def connect_db():
                                 email TEXT NOT NULL,
                                 role TEXT NOT NULL)"""
             )
+            # Crear tabla afectados si no existe
+            cursor.execute(
+                """CREATE TABLE IF NOT EXISTS afectados (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        afectado TEXT NOT NULL,
+                        ubi TEXT NOT NULL,
+                        necesidad TEXT NOT NULL,
+                        dni TEXT NOT NULL,
+                        tlf TEXT NOT NULL
+                    )"""
+            )
+            # Crear tabla enseres si no existe
+            cursor.execute(
+                """CREATE TABLE IF NOT EXISTS enseres (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        enser TEXT NOT NULL,
+                        cantidad INTEGER NOT NULL,
+                        medidas TEXT NOT NULL,
+                        estado TEXT NOT NULL,
+                        donante TEXT NOT NULL,
+                        agraciado TEXT NOT NULL
+                    )"""
+            )
             connection.commit()
             connection.close()
         connection = sqlite3.connect(USER_DB_PATH, check_same_thread=False)
@@ -103,3 +126,151 @@ def fetch_users():
     users = cursor.fetchall()
     connection.close()
     return [{"nombre": user[0], "email": user[1], "rol": user[2]} for user in users]
+
+def insert_afectado(data: dict):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    encrypted_dni = generate_password_hash(data["dni"])
+    cursor.execute(
+        "INSERT INTO afectados (afectado, ubi, necesidad, dni, tlf) VALUES (?, ?, ?, ?, ?)",
+        (data["afectado"], data["ubi"], data["necesidad"], encrypted_dni, data["tlf"])
+    )
+    connection.commit()
+    connection.close()
+
+def fetch_afectados():
+    connection = connect_db()
+    if connection is None:
+        return []
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM afectados")
+    rows = cursor.fetchall()
+    connection.close()
+    return [
+        {"id": row[0], "afectado": row[1], "ubi": row[2], "necesidad": row[3], "dni": "****", "tlf": row[5]} for row in rows
+    ]
+
+def search_afectados(name=None, dni=None, tlf=None):
+    connection = connect_db()
+    if connection is None:
+        return []
+    cursor = connection.cursor()
+    query = "SELECT * FROM afectados WHERE 1=1"
+    params = []
+    if name:
+        query += " AND afectado = ?"
+        params.append(name)
+    if dni:
+        query += " AND dni IS NOT NULL"
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        # Filtrar en Python porque el hash no se puede buscar directamente
+        rows = [row for row in rows if check_password_hash(row[4], dni)]
+    else:
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+    connection.close()
+    return [
+        {"id": row[0], "afectado": row[1], "ubi": row[2], "necesidad": row[3], "dni": "****", "tlf": row[5]} for row in rows
+    ]
+
+def update_afectado(id, data: dict):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    encrypted_dni = generate_password_hash(data["dni"])
+    cursor.execute(
+        "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=? WHERE id=?",
+        (data["afectado"], data["ubi"], data["necesidad"], encrypted_dni, data["tlf"], id)
+    )
+    connection.commit()
+    connection.close()
+
+def delete_afectado(id):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM afectados WHERE id=?", (id,))
+    connection.commit()
+    connection.close()
+
+def insert_enser(data: dict):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    cursor.execute(
+        "INSERT INTO enseres (enser, cantidad, medidas, estado, donante, agraciado) VALUES (?, ?, ?, ?, ?, ?)",
+        (data["enser"], data["cantidad"], data["medidas"], data["estado"], data["donante"], data["agraciado"])
+    )
+    connection.commit()
+    connection.close()
+
+def fetch_enseres():
+    connection = connect_db()
+    if connection is None:
+        return []
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM enseres")
+    rows = cursor.fetchall()
+    connection.close()
+    return [
+        {"id": row[0], "enser": row[1], "cantidad": row[2], "medidas": row[3], "estado": row[4], "donante": row[5], "agraciado": row[6]} for row in rows
+    ]
+
+def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante=None, agraciado=None):
+    connection = connect_db()
+    if connection is None:
+        return []
+    cursor = connection.cursor()
+    query = "SELECT * FROM enseres WHERE 1=1"
+    params = []
+    if enser:
+        query += " AND enser = ?"
+        params.append(enser)
+    if cantidad:
+        query += " AND cantidad = ?"
+        params.append(cantidad)
+    if medidas:
+        query += " AND medidas = ?"
+        params.append(medidas)
+    if estado:
+        query += " AND estado = ?"
+        params.append(estado)
+    if donante:
+        query += " AND donante = ?"
+        params.append(donante)
+    if agraciado:
+        query += " AND agraciado = ?"
+        params.append(agraciado)
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    connection.close()
+    return [
+        {"id": row[0], "enser": row[1], "cantidad": row[2], "medidas": row[3], "estado": row[4], "donante": row[5], "agraciado": row[6]} for row in rows
+    ]
+
+def update_enser(id, data: dict):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE enseres SET enser=?, cantidad=?, medidas=?, estado=?, donante=?, agraciado=? WHERE id=?",
+        (data["enser"], data["cantidad"], data["medidas"], data["estado"], data["donante"], data["agraciado"], id)
+    )
+    connection.commit()
+    connection.close()
+
+def delete_enser(id):
+    connection = connect_db()
+    if connection is None:
+        return
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM enseres WHERE id=?", (id,))
+    connection.commit()
+    connection.close()

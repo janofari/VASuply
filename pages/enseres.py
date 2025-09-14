@@ -1,175 +1,87 @@
 import dash
-import pandas as pd
 from dash import Input, Output, State, callback, dash_table, dcc, html
 from flask import session
+from services.database.sqlite_db_handler import (
+    fetch_enseres,
+    insert_enser,
+    search_enseres,
+    update_enser,
+    delete_enser,
+)
 
 
 dash.register_page(__name__, path="/enseres", name="Enseres")
 
 layout = html.Div(id="enseres-content")
 
-global dummy_enseres
-dummy_enseres = [
-    {
-        "id": 1,
-        "enser": "Mesa",
-        "cantidad": 2,
-        "medidas": "120x60",
-        "estado": "Nuevo",
-        "donante": "Juan Perez",
-        "agraciado": "Maria",
-    },
-    {
-        "id": 2,
-        "enser": "Silla",
-        "cantidad": 4,
-        "medidas": "40x40",
-        "estado": "Usado",
-        "donante": "Antonio Ruin",
-        "agraciado": "Luis",
-    },
-    {
-        "id": 3,
-        "enser": "Cama",
-        "cantidad": 1,
-        "medidas": "200x150",
-        "estado": "Nuevo",
-        "donante": "El Fari",
-        "agraciado": "Fernando Alonso",
-    },
-    {
-        "id": 4,
-        "enser": "Escritorio",
-        "cantidad": 1,
-        "medidas": "150x75",
-        "estado": "Usado",
-        "donante": "Don Cerve",
-        "agraciado": "Pedro",
-    },
-    {
-        "id": 5,
-        "enser": "Armario",
-        "cantidad": 1,
-        "medidas": "180x90",
-        "estado": "Nuevo",
-        "donante": "Fernando Alonso",
-        "agraciado": "Juan Perez",
-    },
-    {
-        "id": 6,
-        "enser": "Sofá",
-        "cantidad": 1,
-        "medidas": "200x100",
-        "estado": "Usado",
-        "donante": "Luis",
-        "agraciado": "Antonio Ruin",
-    },
-    {
-        "id": 7,
-        "enser": "Lámpara",
-        "cantidad": 3,
-        "medidas": "50x50",
-        "estado": "Nuevo",
-        "donante": "Maria",
-        "agraciado": "El Fari",
-    },
-]
-
-
-# Dummy data function
-def fetch_enseres():
-    global dummy_enseres
-    return pd.DataFrame(dummy_enseres)
-
-
-# Dummy data function
-def search_enser(enser, cantidad, medidas, estado, donante, agraciado):
-    global dummy_enseres
-    matches_list = []
-    for i in dummy_enseres:
-        if (
-            (enser is None or i["enser"] == enser)
-            and (cantidad is None or i["cantidad"] == cantidad)
-            and (medidas is None or i["medidas"] == medidas)
-            and (estado is None or i["estado"] == estado)
-            and (donante is None or i["donante"] == donante)
-            and (agraciado is None or i["agraciado"] == agraciado)
-        ):
-            matches_list.append(i)
-    return pd.DataFrame(matches_list)
-
-
-
 
 @callback(Output("enseres-content", "children"), Input("url", "pathname"))
 def display_enseres(_):
-    if session.get("user_group") == "Admin":
-        return html.Div(
-            [
-                html.H1("Gestión de Enseres"),
-                dash_table.DataTable(
-                    id="enseres-table",
-                    columns=[
-                        {"name": "Enser", "id": "enser", "editable": False},
-                        {"name": "Cantidad", "id": "cantidad", "editable": True},
-                        {"name": "Medidas", "id": "medidas", "editable": True},
-                        {"name": "Estado", "id": "estado", "editable": True},
-                        {"name": "Donante", "id": "donante", "editable": True},
-                        {"name": "Agraciado", "id": "agraciado", "editable": True},
-                    ],
-                    data=fetch_enseres().to_dict("records"),
-                    row_deletable=True,
-                    editable=True,
-                    filter_action="native",
-                    filter_options={"placeholder_text": "filtrar por ..."},
-                ),
-                html.Button(
-                    "Añadir Enser",
-                    id="add-enser-btn",
-                    n_clicks=0,
-                    style={"margin": "10px"},
-                ),
-                dcc.Input(id="new-enser-name", type="text", placeholder="Enser"),
-                dcc.Input(
-                    id="new-enser-cantidad", type="number", placeholder="Cantidad"
-                ),
-                dcc.Input(id="new-enser-medidas", type="text", placeholder="Medidas"),
-                dcc.Input(id="new-enser-estado", type="text", placeholder="Estado"),
-                dcc.Input(id="new-enser-donante", type="text", placeholder="Donante"),
-                dcc.Input(
-                    id="new-enser-agraciado", type="text", placeholder="Agraciado"
-                ),
-            ],
-            style={"margin": "30px"},
-        )
-    else:
-        return html.Div(
-            [
-                html.H1("Busqueda de Enseres"),
-                html.Button(
-                    "Buscar Enser",
-                    id="search-enser-btn",
-                    n_clicks=0,
-                    style={"margin": "10px"},
-                ),
-                dcc.Input(id="search-enser-name", type="text", placeholder="Enser"),
-                dcc.Input(
-                    id="search-enser-cantidad", type="number", placeholder="Cantidad"
-                ),
-                dcc.Input(
-                    id="search-enser-medidas", type="text", placeholder="Medidas"
-                ),
-                dcc.Input(id="search-enser-estado", type="text", placeholder="Estado"),
-                dcc.Input(
-                    id="search-enser-donante", type="text", placeholder="Donante"
-                ),
-                dcc.Input(
-                    id="search-enser-agraciado", type="text", placeholder="Agraciado"
-                ),
-                html.Div(id="output-search-enseres"),
-            ],
-            style={"margin": "30px"},
-        )
+    return html.Div(
+        [
+            html.H1("Gestión de Enseres"),
+            dash_table.DataTable(
+                id="enseres-table",
+                columns=[
+                    {"name": "Enser", "id": "enser", "editable": False},
+                    {"name": "Cantidad", "id": "cantidad", "editable": True},
+                    {"name": "Medidas", "id": "medidas", "editable": True},
+                    {"name": "Estado", "id": "estado", "presentation": "dropdown"},
+                    {"name": "Donante", "id": "donante", "editable": True},
+                    {"name": "Agraciado", "id": "agraciado", "editable": True},
+                ],
+                data=fetch_enseres(),
+                row_deletable=True,
+                editable=True,
+                filter_action="native",
+                filter_options={"placeholder_text": "filtrar por ..."},
+                dropdown={
+                    "estado": {
+                        "options": [
+                            {"label": "Perfecto", "value": "Perfecto"},
+                            {"label": "Bueno", "value": "Bueno"},
+                            {"label": "Aceptable", "value": "Aceptable"},
+                            {"label": "Malo", "value": "Malo"},
+                            {"label": "Deplorable", "value": "Deplorable"},
+                        ]
+                    }
+                },
+            ),
+            html.Div(
+                [
+                    dcc.Input(id="new-enser-name", type="text", placeholder="Enser"),
+                    dcc.Input(
+                        id="new-enser-cantidad", type="number", placeholder="Cantidad", min=0
+                    ),
+                    dcc.Input(id="new-enser-medidas", type="text", placeholder="Medidas"),
+                    dcc.Dropdown(
+                        id="new-enser-estado",
+                        options=[
+                            {"label": "Perfecto", "value": "Perfecto"},
+                            {"label": "Bueno", "value": "Bueno"},
+                            {"label": "Aceptable", "value": "Aceptable"},
+                            {"label": "Malo", "value": "Malo"},
+                            {"label": "Deplorable", "value": "Deplorable"},
+                        ],
+                        placeholder="Estado",
+                        style={"marginBottom": "0px"},
+                    ),
+                    dcc.Input(id="new-enser-donante", type="text", placeholder="Donante"),
+                    dcc.Input(
+                        id="new-enser-agraciado", type="text", placeholder="Agraciado"
+                    ),
+                ],
+                className="enseres-form-row",
+            ),
+            html.Button(
+                "Añadir Enser",
+                id="add-enser-btn",
+                n_clicks=0,
+                style={"margin": "10px"},
+            ),
+        ],
+        style={"margin": "30px"},
+    )
 
 
 @callback(
@@ -193,9 +105,7 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ro
         and donante
         and agraciado
     ):
-        new_id = max(row["id"] for row in rows) + 1 if rows else 1
         new_row = {
-            "id": new_id,
             "enser": enser,
             "cantidad": cantidad,
             "medidas": medidas,
@@ -203,9 +113,8 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ro
             "donante": donante,
             "agraciado": agraciado,
         }
-        rows.append(new_row)
-        dummy_enseres.append(new_row)
-
+        insert_enser(new_row)
+        return fetch_enseres()
     return rows
 
 
@@ -219,17 +128,15 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ro
     State("search-enser-donante", "value"),
     State("search-enser-agraciado", "value"),
 )
-def search_enseres(n_clicks, enser, cantidad, medidas, estado, donante, agraciado):
+def search_enseres_callback(n_clicks, enser, cantidad, medidas, estado, donante, agraciado):
     if n_clicks > 0:
-        enseres_match = search_enser(
-            enser, cantidad, medidas, estado, donante, agraciado
-        )
-        if not enseres_match.empty:
+        enseres_match = search_enseres(enser, cantidad, medidas, estado, donante, agraciado)
+        if enseres_match:
             return html.Div(
                 [
                     html.H2(f"Enser(es) encontrados = {len(enseres_match)}"),
                     dash_table.DataTable(
-                        id="enseres-table",
+                        id="enseres-table-search",
                         columns=[
                             {"name": "Enser", "id": "enser"},
                             {"name": "Cantidad", "id": "cantidad"},
@@ -238,7 +145,7 @@ def search_enseres(n_clicks, enser, cantidad, medidas, estado, donante, agraciad
                             {"name": "Donante", "id": "donante"},
                             {"name": "Agraciado", "id": "agraciado"},
                         ],
-                        data=enseres_match.to_dict("records"),
+                        data=enseres_match,
                         filter_action="native",
                         filter_options={"placeholder_text": "filtrar por ..."},
                     ),
@@ -255,19 +162,13 @@ def search_enseres(n_clicks, enser, cantidad, medidas, estado, donante, agraciad
 def update_or_delete_enseres(previous_rows, current_rows):
     if previous_rows is None:
         previous_rows = []
-
     previous_set = {row["id"]: row for row in previous_rows}
     current_set = {row["id"]: row for row in current_rows}
-
     # Detect deleted rows
     deleted_enseres = set(previous_set.keys()) - set(current_set.keys())
-    for enser in deleted_enseres:
-        print(f"Deleted enser with id {enser}")
-        dummy_enseres[:] = [row for row in dummy_enseres if row["id"] != enser]
-
+    for enser_id in deleted_enseres:
+        delete_enser(enser_id)
     # Detect updated rows
     for id, data in current_set.items():
-        for row in dummy_enseres:
-            if row["id"] == id and data != row:
-                print(f"Updated enser with id {id}")
-                row.update_db(data)
+        if id in previous_set and data != previous_set[id]:
+            update_enser(id, data)

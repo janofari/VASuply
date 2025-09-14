@@ -7,7 +7,7 @@ from dash import dcc, html
 from dash_auth import BasicAuth
 
 from pages.components import navbar, register_navbar_callbacks
-from services.database.sqlite_db_handler import validate_user
+from services.database.sqlite_db_handler import validate_user, insert_users
 
 
 app = dash.Dash(
@@ -21,7 +21,7 @@ app = dash.Dash(
 )
 app.title = "VASupply"
 
-# BasicAuth(app, auth_func=validate_user)
+BasicAuth(app, auth_func=validate_user)
 
 server = app.server
 app.server.secret_key = os.urandom(24).hex()

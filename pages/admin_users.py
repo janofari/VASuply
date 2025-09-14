@@ -41,7 +41,24 @@ def display_page(pathname):
                     id="new-user-password", type="password", placeholder="Contraseña"
                 ),
                 dcc.Input(id="new-user-email", type="email", placeholder="Email"),
-                dcc.Input(id="new-user-rol", type="text", placeholder="Rol"),
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id="new-user-rol",
+                            options=[
+                                {"label": "Admin", "value": "Admin"},
+                                {"label": "User", "value": "User"},
+                            ],
+                            placeholder="Rol",
+                            style={"width": "150px"},
+                        ),
+                    ],
+                    style={
+                        "display": "inline-block",
+                        "verticalAlign": "middle",
+                        "marginLeft": "10px",
+                    },
+                ),
                 html.Div(id="output-users"),
             ],
             style={"margin": "30px"},
