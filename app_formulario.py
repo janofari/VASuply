@@ -2,12 +2,13 @@ import dash
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 from services.database.models import Afectados, SessionLocal
+from dash.exceptions import PreventUpdate
 
-# Configurar la app Dash con Bootstrap
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = "Formulario de Ayuda – DANA"
 
-# Estilo para centrar el contenido y hacer el layout responsivo
+# LAYOUT PAGINA FORMULARIO
 app.layout = html.Div(
     [
         dbc.Container(
@@ -138,38 +139,55 @@ app.layout = html.Div(
     ]
 )
 
-
+# Comprobado que una vez que el registro haya sido satisfactorio, no se pueda volver a enviar
 # Callback para guardar en la base de datos
 @app.callback(
-    Output("mensaje_confirmacion", "children"),
+    [
+        Output("mensaje_confirmacion", "children"),
+        Output("submit", "disabled"),  
+    ],
     Input("submit", "n_clicks"),
     State("afectado", "value"),
     State("DNI", "value"),
     State("telefono", "value"),
     State("ubicacion", "value"),
     State("necesidad", "value"),
+    prevent_initial_call=True,  
 )
 def guardar_solicitud(n_clicks, afectado, dni, telefono, ubicacion, necesidad):
-    if n_clicks:
-        if not afectado or not dni or not necesidad:
-            return "⚠️ Por favor, completa al menos nombre, DNI y necesidad."
+    if not n_clicks:
+        raise PreventUpdate
 
-        try:
-            db = SessionLocal()
-            nueva = Afectados(
-                afectado=afectado.strip(),
-                DNI=dni.strip(),
-                telefono=int(telefono) if telefono else None,
-                ubicacion=ubicacion.strip() if ubicacion else None,
-                necesidad=necesidad.strip(),
-            )
-            db.add(nueva)
-            db.commit()
-            db.close()
-            return "✅ Solicitud registrada correctamente. Gracias por comunicarte con nosotros."
-        except Exception as e:
-            return f"❌ Error al guardar los datos: {str(e)}"
-    return ""
+    # Validación de campos obligatorios
+    if not afectado or not dni or not telefono or not necesidad:
+        return (
+            "⚠️ Por favor, completa al menos nombre, DNI, teléfono y necesidad.",
+            False,
+        )
+
+    try:
+        db = SessionLocal()
+        nueva = Afectados(
+            afectado=afectado.strip(),
+            DNI=dni.strip(),
+            telefono=int(telefono) if telefono else None,
+            ubicacion=ubicacion.strip() if ubicacion else None,
+            necesidad=necesidad.strip(),
+        )
+        db.add(nueva)
+        db.commit()
+        db.close()
+
+        return (
+            html.Div(
+                "✅ Solicitud registrada correctamente. Gracias por comunicarte con nosotros.\nPara volver a enviar el formulario, recarga la página.",
+                style={"whiteSpace": "pre-line"},
+            ),
+            True,
+        )
+
+    except Exception as e:
+        return (f"❌ Error al guardar los datos: {str(e)}", False)
 
 
 if __name__ == "__main__":
