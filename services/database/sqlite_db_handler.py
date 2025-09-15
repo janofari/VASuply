@@ -28,7 +28,7 @@ def connect_db():
                         ubi TEXT NOT NULL,
                         necesidad TEXT NOT NULL,
                         dni TEXT NOT NULL,
-                        tlf TEXT NOT NULL
+                        tlf INT NOT NULL
                     )"""
             )
             # Crear tabla enseres si no existe

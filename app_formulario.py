@@ -1,7 +1,8 @@
 import dash
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
-from services.database.models import Afectados, SessionLocal
+
+from services.database.sqlite_db_handler import insert_afectado
 from dash.exceptions import PreventUpdate
 
 
@@ -166,17 +167,14 @@ def guardar_solicitud(n_clicks, afectado, dni, telefono, ubicacion, necesidad):
         )
 
     try:
-        db = SessionLocal()
-        nueva = Afectados(
-            afectado=afectado.strip(),
-            DNI=dni.strip(),
-            telefono=int(telefono) if telefono else None,
-            ubicacion=ubicacion.strip() if ubicacion else None,
-            necesidad=necesidad.strip(),
-        )
-        db.add(nueva)
-        db.commit()
-        db.close()
+        new_afectado = {
+            "afectado": afectado.strip(),
+            "ubi": ubicacion.strip() if ubicacion else None,
+            "necesidad": necesidad.strip(),
+            "dni": dni.strip(),
+            "tlf": int(telefono) if telefono else None,
+        }
+        insert_afectado(new_afectado)
 
         return (
             html.Div(
@@ -191,4 +189,4 @@ def guardar_solicitud(n_clicks, afectado, dni, telefono, ubicacion, necesidad):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    app.run(debug=True, port=8055)
