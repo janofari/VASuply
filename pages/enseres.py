@@ -8,11 +8,12 @@ from services.database.sqlite_db_handler import (
     update_enser,
     delete_enser,
 )
+from pages.components import navbar, register_navbar_callbacks
 
 
 dash.register_page(__name__, path="/enseres", name="Enseres")
 
-layout = html.Div(id="enseres-content")
+layout = [navbar, html.Div(id="enseres-content")]
 
 
 @callback(Output("enseres-content", "children"), Input("url", "pathname"))
