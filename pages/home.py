@@ -1,6 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+from pages.components import navbar, register_navbar_callbacks
 
 dash.register_page(__name__, path="/", name="VASupply")
 
@@ -49,6 +50,7 @@ card_enseres = html.A(
 
 layout = html.Div(
     [
+        navbar,
         html.H1("Bienvenido a VASupply", style={"textAlign": "center"}),
         html.H2(
             "Selecciona tu acción",
@@ -66,3 +68,4 @@ layout = html.Div(
         ),
     ]
 )
+
