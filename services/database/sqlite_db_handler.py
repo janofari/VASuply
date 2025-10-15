@@ -25,10 +25,15 @@ def connect_db():
                 """CREATE TABLE IF NOT EXISTS afectados (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         afectado TEXT NOT NULL,
-                        ubi TEXT NOT NULL,
-                        necesidad TEXT NOT NULL,
-                        dni TEXT NOT NULL,
-                        tlf INT NOT NULL
+                        ubi TEXT,
+                        necesidad TEXT,
+                        dni TEXT,
+                        tlf INT,
+                        dia_alta TEXT,
+                        direccion_afectada TEXT,
+                        poblacion TEXT,
+                        situacion_personal TEXT,
+                        dia_visita TEXT
                     )"""
             )
             # Crear tabla enseres si no existe
@@ -37,10 +42,11 @@ def connect_db():
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         enser TEXT NOT NULL,
                         cantidad INTEGER NOT NULL,
-                        medidas TEXT NOT NULL,
-                        estado TEXT NOT NULL,
-                        donante TEXT NOT NULL,
-                        agraciado TEXT NOT NULL
+                        medidas TEXT,
+                        estado TEXT,
+                        donante TEXT,
+                        agraciado TEXT,
+                        tipo TEXT
                     )"""
             )
             connection.commit()
@@ -134,8 +140,19 @@ def insert_afectado(data: dict):
     cursor = connection.cursor()
     encrypted_dni = generate_password_hash(data["dni"])
     cursor.execute(
-        "INSERT INTO afectados (afectado, ubi, necesidad, dni, tlf) VALUES (?, ?, ?, ?, ?)",
-        (data["afectado"], data["ubi"], data["necesidad"], encrypted_dni, data["tlf"])
+        "INSERT INTO afectados (afectado, ubi, necesidad, dni, tlf, dia_alta, direccion_afectada, poblacion, situacion_personal, dia_visita) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            data["afectado"],
+            data["ubi"],
+            data["necesidad"],
+            encrypted_dni,
+            data["tlf"],
+            data.get("dia_alta"),
+            data.get("direccion_afectada"),
+            data.get("poblacion"),
+            data.get("situacion_personal"),
+            data.get("dia_visita"),
+        )
     )
     connection.commit()
     connection.close()
@@ -149,7 +166,20 @@ def fetch_afectados():
     rows = cursor.fetchall()
     connection.close()
     return [
-        {"id": row[0], "afectado": row[1], "ubi": row[2], "necesidad": row[3], "dni": "****", "tlf": row[5]} for row in rows
+        {
+            "id": row[0],
+            "afectado": row[1],
+            "ubi": row[2],
+            "necesidad": row[3],
+            "dni": "****",
+            "tlf": row[5],
+            "dia_alta": row[6],
+            "direccion_afectada": row[7],
+            "poblacion": row[8],
+            "situacion_personal": row[9],
+            "dia_visita": row[10],
+        }
+        for row in rows
     ]
 
 def search_afectados(name=None, dni=None, tlf=None):
@@ -169,11 +199,27 @@ def search_afectados(name=None, dni=None, tlf=None):
         # Filtrar en Python porque el hash no se puede buscar directamente
         rows = [row for row in rows if check_password_hash(row[4], dni)]
     else:
+        if tlf:
+            query += " AND tlf = ?"
+            params.append(tlf)
         cursor.execute(query, params)
         rows = cursor.fetchall()
     connection.close()
     return [
-        {"id": row[0], "afectado": row[1], "ubi": row[2], "necesidad": row[3], "dni": "****", "tlf": row[5]} for row in rows
+        {
+            "id": row[0],
+            "afectado": row[1],
+            "ubi": row[2],
+            "necesidad": row[3],
+            "dni": "****",
+            "tlf": row[5],
+            "dia_alta": row[6],
+            "direccion_afectada": row[7],
+            "poblacion": row[8],
+            "situacion_personal": row[9],
+            "dia_visita": row[10],
+        }
+        for row in rows
     ]
 
 def update_afectado(id, data: dict):
@@ -183,8 +229,20 @@ def update_afectado(id, data: dict):
     cursor = connection.cursor()
     encrypted_dni = generate_password_hash(data["dni"])
     cursor.execute(
-        "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=? WHERE id=?",
-        (data["afectado"], data["ubi"], data["necesidad"], encrypted_dni, data["tlf"], id)
+        "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=?, dia_alta=?, direccion_afectada=?, poblacion=?, situacion_personal=?, dia_visita=? WHERE id=?",
+        (
+            data["afectado"],
+            data["ubi"],
+            data["necesidad"],
+            encrypted_dni,
+            data["tlf"],
+            data.get("dia_alta"),
+            data.get("direccion_afectada"),
+            data.get("poblacion"),
+            data.get("situacion_personal"),
+            data.get("dia_visita"),
+            id,
+        )
     )
     connection.commit()
     connection.close()
@@ -204,8 +262,16 @@ def insert_enser(data: dict):
         return
     cursor = connection.cursor()
     cursor.execute(
-        "INSERT INTO enseres (enser, cantidad, medidas, estado, donante, agraciado) VALUES (?, ?, ?, ?, ?, ?)",
-        (data["enser"], data["cantidad"], data["medidas"], data["estado"], data["donante"], data["agraciado"])
+        "INSERT INTO enseres (enser, cantidad, medidas, estado, donante, agraciado, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (
+            data["enser"],
+            data["cantidad"],
+            data["medidas"],
+            data["estado"],
+            data["donante"],
+            data["agraciado"],
+            data.get("tipo"),
+        )
     )
     connection.commit()
     connection.close()
@@ -219,10 +285,20 @@ def fetch_enseres():
     rows = cursor.fetchall()
     connection.close()
     return [
-        {"id": row[0], "enser": row[1], "cantidad": row[2], "medidas": row[3], "estado": row[4], "donante": row[5], "agraciado": row[6]} for row in rows
+        {
+            "id": row[0],
+            "enser": row[1],
+            "cantidad": row[2],
+            "medidas": row[3],
+            "estado": row[4],
+            "donante": row[5],
+            "agraciado": row[6],
+            "tipo": row[7],
+        }
+        for row in rows
     ]
 
-def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante=None, agraciado=None):
+def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante=None, agraciado=None, tipo=None):
     connection = connect_db()
     if connection is None:
         return []
@@ -247,11 +323,24 @@ def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante
     if agraciado:
         query += " AND agraciado = ?"
         params.append(agraciado)
+    if tipo:
+        query += " AND tipo = ?"
+        params.append(tipo)
     cursor.execute(query, params)
     rows = cursor.fetchall()
     connection.close()
     return [
-        {"id": row[0], "enser": row[1], "cantidad": row[2], "medidas": row[3], "estado": row[4], "donante": row[5], "agraciado": row[6]} for row in rows
+        {
+            "id": row[0],
+            "enser": row[1],
+            "cantidad": row[2],
+            "medidas": row[3],
+            "estado": row[4],
+            "donante": row[5],
+            "agraciado": row[6],
+            "tipo": row[7],
+        }
+        for row in rows
     ]
 
 def update_enser(id, data: dict):
@@ -260,8 +349,17 @@ def update_enser(id, data: dict):
         return
     cursor = connection.cursor()
     cursor.execute(
-        "UPDATE enseres SET enser=?, cantidad=?, medidas=?, estado=?, donante=?, agraciado=? WHERE id=?",
-        (data["enser"], data["cantidad"], data["medidas"], data["estado"], data["donante"], data["agraciado"], id)
+        "UPDATE enseres SET enser=?, cantidad=?, medidas=?, estado=?, donante=?, agraciado=?, tipo=? WHERE id=?",
+        (
+            data["enser"],
+            data["cantidad"],
+            data["medidas"],
+            data["estado"],
+            data["donante"],
+            data["agraciado"],
+            data.get("tipo"),
+            id,
+        )
     )
     connection.commit()
     connection.close()

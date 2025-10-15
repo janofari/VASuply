@@ -4,10 +4,11 @@ from dash import Input, Output, State, callback, dash_table, dcc, html
 from flask import current_app, session
 
 from services.database.sqlite_db_handler import fetch_users, insert_users, delete_db, update_db
+from pages.components import navbar, register_navbar_callbacks
 
 dash.register_page(__name__, path="/admin_usuarios", name="Usuarios")
 
-layout = html.Div(id="admin-users-content")
+layout = [navbar,html.Div(id="admin-users-content")]
 
 
 @callback(Output("admin-users-content", "children"), Input("url", "pathname"))

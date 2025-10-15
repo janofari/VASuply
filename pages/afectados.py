@@ -25,28 +25,78 @@ def display_afectados(_):
                 dash_table.DataTable(
                     id="afectados-table",
                     columns=[
+                        {"name": "Día de alta", "id": "dia_alta", "editable": True},
                         {"name": "Afectado", "id": "afectado", "editable": False},
-                        {"name": "Ubicacion", "id": "ubi", "editable": True},
-                        {"name": "Necesidad", "id": "necesidad", "editable": True},
                         {"name": "Telefono", "id": "tlf", "editable": True},
+                        {"name": "Dirección afectada", "id": "direccion_afectada", "editable": True},
+                        {"name": "Ubicacion alternativa", "id": "ubi", "editable": True},
+                        {"name": "Población", "id": "poblacion", "editable": True},
+                        {"name": "Situación personal", "id": "situacion_personal", "editable": True},
+                        {"name": "Necesidad", "id": "necesidad", "editable": True},
+                        {"name": "Día de visita", "id": "dia_visita", "editable": True},
                     ],
                     data=fetch_afectados(),
                     row_deletable=True,
                     editable=True,
                     filter_action="native",
                     filter_options={"placeholder_text": "filtrar por ..."},
+                    style_table={"marginBottom": "30px"},
                 ),
-                html.Button(
-                    "Añadir Afectado",
-                    id="add-afectado-btn",
-                    n_clicks=0,
-                    style={"margin": "10px"},
+                html.Div(
+                    [
+                        dcc.DatePickerSingle(
+                            id="new-afectado-dia-alta",
+                            placeholder="Día de alta",
+                            display_format="DD/MM/YYYY",
+                            style={"margin": "5px", "width": "160px", "height": "40px", "padding": "0"},
+                            month_format="MM/YYYY",
+                            first_day_of_week=1,
+                        ),
+                        dcc.Input(id="new-afectado-name", type="text", placeholder="Nombre", style={"margin": "5px", "width": "180px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-tlf", type="text", placeholder="Telefono", style={"margin": "5px", "width": "120px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-dni", type="text", placeholder="DNI", style={"margin": "5px", "width": "120px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-direccion", type="text", placeholder="Dirección afectada", style={"margin": "5px", "width": "200px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-ubi", type="text", placeholder="Ubicacion alternativa", style={"margin": "5px", "width": "180px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-poblacion", type="text", placeholder="Población", style={"margin": "5px", "width": "140px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-situacion", type="text", placeholder="Situación personal", style={"margin": "5px", "width": "180px", "height": "40px"}),
+                        dcc.Input(id="new-afectado-nec", type="text", placeholder="Necesidad", style={"margin": "5px", "width": "180px", "height": "40px"}),
+                        dcc.DatePickerSingle(
+                            id="new-afectado-dia-visita",
+                            placeholder="Día de visita",
+                            display_format="DD/MM/YYYY",
+                            style={"margin": "5px", "width": "160px", "height": "40px", "padding": "0"},
+                            month_format="MM/YYYY",
+                            first_day_of_week=1,
+                        ),
+                        html.Button(
+                            "Añadir Afectado",
+                            id="add-afectado-btn",
+                            n_clicks=0,
+                            style={
+                                "margin": "5px 0 5px 10px",
+                                "padding": "8px 18px",
+                                "backgroundColor": "#1976d2",
+                                "color": "white",
+                                "border": "none",
+                                "borderRadius": "4px",
+                                "fontWeight": "bold",
+                                "cursor": "pointer",
+                                "height": "40px"
+                            },
+                        ),
+                    ],
+                    style={
+                        "display": "flex",
+                        "flexWrap": "wrap",
+                        "alignItems": "center",
+                        "gap": "8px",
+                        "marginBottom": "25px",
+                        "background": "#f7f7f7",
+                        "padding": "15px 10px",
+                        "borderRadius": "8px",
+                        "boxShadow": "0 2px 8px #0001"
+                    },
                 ),
-                dcc.Input(id="new-afectado-name", type="text", placeholder="Nombre"),
-                dcc.Input(id="new-afectado-ubi", type="text", placeholder="Ubicacion"),
-                dcc.Input(id="new-afectado-nec", type="text", placeholder="Necesidad"),
-                dcc.Input(id="new-afectado-dni", type="text", placeholder="DNI"),
-                dcc.Input(id="new-afectado-tlf", type="text", placeholder="Telefono"),
             ],
             style={"margin": "30px"},
         )
@@ -54,28 +104,51 @@ def display_afectados(_):
         return html.Div(
             [
                 html.H1("Busqueda de Afectados"),
-                dcc.Dropdown(
-                    id="search-criteria-dropdown",
-                    options=[
-                        {"label": "Nombre", "value": "nombre"},
-                        {"label": "DNI", "value": "dni"},
-                        {"label": "Telefono", "value": "tlf"},
+                html.Div(
+                    [
+                        dcc.Dropdown(
+                            id="search-criteria-dropdown",
+                            options=[
+                                {"label": "Nombre", "value": "nombre"},
+                                {"label": "DNI", "value": "dni"},
+                                {"label": "Telefono", "value": "tlf"},
+                            ],
+                            value="nombre",
+                            clearable=False,
+                            style={"width": "200px", "marginRight": "10px"},
+                        ),
+                        dcc.Input(
+                            id="search-afectado-input",
+                            type="text",
+                            placeholder="Buscar...",
+                            style={"marginRight": "10px", "width": "200px"},
+                        ),
+                        html.Button(
+                            "Buscar Afectado",
+                            id="search-afectado-btn",
+                            n_clicks=0,
+                            style={
+                                "padding": "8px 18px",
+                                "backgroundColor": "#1976d2",
+                                "color": "white",
+                                "border": "none",
+                                "borderRadius": "4px",
+                                "fontWeight": "bold",
+                                "cursor": "pointer",
+                                "height": "40px"
+                            },
+                        ),
                     ],
-                    value="nombre",
-                    clearable=False,
-                    style={"width": "250px", "marginBottom": "10px"},
-                ),
-                dcc.Input(
-                    id="search-afectado-input",
-                    type="text",
-                    placeholder="Buscar...",
-                    style={"marginBottom": "10px"},
-                ),
-                html.Button(
-                    "Buscar Afectado",
-                    id="search-afectado-btn",
-                    n_clicks=0,
-                    style={"margin": "10px"},
+                    style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": "8px",
+                        "marginBottom": "20px",
+                        "background": "#f7f7f7",
+                        "padding": "12px 10px",
+                        "borderRadius": "8px",
+                        "boxShadow": "0 2px 8px #0001"
+                    },
                 ),
                 html.Div(id="output-search-afectados"),
             ],
@@ -91,9 +164,22 @@ def display_afectados(_):
     State("new-afectado-nec", "value"),
     State("new-afectado-dni", "value"),
     State("new-afectado-tlf", "value"),
+    State("new-afectado-dia-alta", "date"),
+    State("new-afectado-direccion", "value"),
+    State("new-afectado-poblacion", "value"),
+    State("new-afectado-situacion", "value"),
+    State("new-afectado-dia-visita", "date"),
     State("afectados-table", "data"),
 )
-def add_afectado(n_clicks, name, ubi, nec, dni, tlf, rows):
+def add_afectado(n_clicks, name, ubi, nec, dni, tlf, dia_alta, direccion, poblacion, situacion, dia_visita, rows):
+    from datetime import datetime
+    def format_date(date_str):
+        if date_str:
+            try:
+                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
+            except Exception:
+                return ""
+        return ""
     if n_clicks > 0 and name and ubi and nec and dni and tlf:
         new_row = {
             "afectado": name,
@@ -101,6 +187,11 @@ def add_afectado(n_clicks, name, ubi, nec, dni, tlf, rows):
             "necesidad": nec,
             "dni": dni,
             "tlf": tlf,
+            "dia_alta": format_date(dia_alta),
+            "direccion_afectada": direccion,
+            "poblacion": poblacion,
+            "situacion_personal": situacion,
+            "dia_visita": format_date(dia_visita),
         }
         insert_afectado(new_row)
         return fetch_afectados()
@@ -130,10 +221,15 @@ def search_afectados_callback(n_clicks, criterio, valor):
                     dash_table.DataTable(
                         id="afectados-table-search",
                         columns=[
+                            {"name": "Día de alta", "id": "dia_alta"},
                             {"name": "Afectado", "id": "afectado"},
-                            {"name": "Ubicacion", "id": "ubi"},
-                            {"name": "Necesidad", "id": "necesidad"},
                             {"name": "Telefono", "id": "tlf"},
+                            {"name": "Dirección afectada", "id": "direccion_afectada"},
+                            {"name": "Ubicacion alternativa", "id": "ubi"},
+                            {"name": "Población", "id": "poblacion"},
+                            {"name": "Situación personal", "id": "situacion_personal"},
+                            {"name": "Necesidad", "id": "necesidad"},
+                            {"name": "Día de visita", "id": "dia_visita"},
                         ],
                         data=afectados_match,
                         filter_action="native",

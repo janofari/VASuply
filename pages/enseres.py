@@ -25,36 +25,45 @@ def display_enseres(_):
                 id="enseres-table",
                 columns=[
                     {"name": "Enser", "id": "enser", "editable": False},
+                    {"name": "Tipo", "id": "tipo", "editable": True},
                     {"name": "Cantidad", "id": "cantidad", "editable": True},
                     {"name": "Medidas", "id": "medidas", "editable": True},
-                    {"name": "Estado", "id": "estado", "presentation": "dropdown"},
+                    {"name": "Estado", "id": "estado", "editable": True},
                     {"name": "Donante", "id": "donante", "editable": True},
-                    {"name": "Agraciado", "id": "agraciado", "editable": True},
+                    {"name": "Agraciado", "id": "agraciado", "editable": True}, 
                 ],
                 data=fetch_enseres(),
                 row_deletable=True,
                 editable=True,
                 filter_action="native",
                 filter_options={"placeholder_text": "filtrar por ..."},
-                dropdown={
-                    "estado": {
-                        "options": [
-                            {"label": "Perfecto", "value": "Perfecto"},
-                            {"label": "Bueno", "value": "Bueno"},
-                            {"label": "Aceptable", "value": "Aceptable"},
-                            {"label": "Malo", "value": "Malo"},
-                            {"label": "Deplorable", "value": "Deplorable"},
-                        ]
-                    }
-                },
+                style_table={"marginBottom": "30px"},
             ),
             html.Div(
                 [
-                    dcc.Input(id="new-enser-name", type="text", placeholder="Enser"),
-                    dcc.Input(
-                        id="new-enser-cantidad", type="number", placeholder="Cantidad", min=0
+                    dcc.Input(id="new-enser-name", type="text", placeholder="Enser", style={"margin": "5px", "width": "140px", "height": "40px"}),
+                    dcc.Dropdown(
+                        id="new-enser-tipo",
+                        options=[
+                            {"label": "Diverso", "value": "Diverso"},
+                            {"label": "Karcher", "value": "Karcher"},
+                            {"label": "Bomba_Calor", "value": "Bomba Calor"},
+                            {"label": "Cama", "value": "Cama"},
+                            {"label": "Mueble", "value": "Mueble"},
+                            {"label": "Electrodoméstico", "value": "Electrodoméstico"},
+                            {"label": "Estufa", "value": "Estufa"},
+                        ],
+                        placeholder="Tipo",
+                        style={"margin": "5px", "width": "120px", "height": "40px"},
+                        searchable=True,
+                        clearable=True,
+                        multi=False,
+                        persistence=True,
+                        persistence_type="session",
+                        disabled=False,
                     ),
-                    dcc.Input(id="new-enser-medidas", type="text", placeholder="Medidas"),
+                    dcc.Input(id="new-enser-cantidad", type="number", placeholder="Cantidad", min=0, style={"margin": "5px", "width": "100px", "height": "40px"}),
+                    dcc.Input(id="new-enser-medidas", type="text", placeholder="Medidas", style={"margin": "5px", "width": "120px", "height": "40px"}),
                     dcc.Dropdown(
                         id="new-enser-estado",
                         options=[
@@ -65,20 +74,38 @@ def display_enseres(_):
                             {"label": "Deplorable", "value": "Deplorable"},
                         ],
                         placeholder="Estado",
-                        style={"marginBottom": "0px"},
+                        style={"margin": "5px", "width": "130px", "height": "40px"},
                     ),
-                    dcc.Input(id="new-enser-donante", type="text", placeholder="Donante"),
-                    dcc.Input(
-                        id="new-enser-agraciado", type="text", placeholder="Agraciado"
+                    dcc.Input(id="new-enser-donante", type="text", placeholder="Donante", style={"margin": "5px", "width": "120px", "height": "40px"}),
+                    dcc.Input(id="new-enser-agraciado", type="text", placeholder="Agraciado", style={"margin": "5px", "width": "120px", "height": "40px"}),
+                    html.Button(
+                        "Añadir Enser",
+                        id="add-enser-btn",
+                        n_clicks=0,
+                        style={
+                            "margin": "5px 0 5px 10px",
+                            "padding": "8px 18px",
+                            "backgroundColor": "#1976d2",
+                            "color": "white",
+                            "border": "none",
+                            "borderRadius": "4px",
+                            "fontWeight": "bold",
+                            "cursor": "pointer",
+                            "height": "40px"
+                        },
                     ),
                 ],
-                className="enseres-form-row",
-            ),
-            html.Button(
-                "Añadir Enser",
-                id="add-enser-btn",
-                n_clicks=0,
-                style={"margin": "10px"},
+                style={
+                    "display": "flex",
+                    "flexWrap": "wrap",
+                    "alignItems": "center",
+                    "gap": "8px",
+                    "marginBottom": "25px",
+                    "background": "#f7f7f7",
+                    "padding": "15px 10px",
+                    "borderRadius": "8px",
+                    "boxShadow": "0 2px 8px #0001"
+                },
             ),
         ],
         style={"margin": "30px"},
@@ -94,9 +121,10 @@ def display_enseres(_):
     State("new-enser-estado", "value"),
     State("new-enser-donante", "value"),
     State("new-enser-agraciado", "value"),
+    State("new-enser-tipo", "value"),
     State("enseres-table", "data"),
 )
-def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, rows):
+def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, tipo, rows):
     if (
         n_clicks > 0
         and enser
@@ -113,6 +141,7 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ro
             "estado": estado,
             "donante": donante,
             "agraciado": agraciado,
+            "tipo": tipo,
         }
         insert_enser(new_row)
         return fetch_enseres()
@@ -128,10 +157,11 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ro
     State("search-enser-estado", "value"),
     State("search-enser-donante", "value"),
     State("search-enser-agraciado", "value"),
+    State("search-enser-tipo", "value"),
 )
-def search_enseres_callback(n_clicks, enser, cantidad, medidas, estado, donante, agraciado):
+def search_enseres_callback(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, tipo):
     if n_clicks > 0:
-        enseres_match = search_enseres(enser, cantidad, medidas, estado, donante, agraciado)
+        enseres_match = search_enseres(enser, cantidad, medidas, estado, donante, agraciado, tipo)
         if enseres_match:
             return html.Div(
                 [
@@ -145,6 +175,7 @@ def search_enseres_callback(n_clicks, enser, cantidad, medidas, estado, donante,
                             {"name": "Estado", "id": "estado"},
                             {"name": "Donante", "id": "donante"},
                             {"name": "Agraciado", "id": "agraciado"},
+                            {"name": "Tipo", "id": "tipo"},
                         ],
                         data=enseres_match,
                         filter_action="native",
