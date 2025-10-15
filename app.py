@@ -88,4 +88,4 @@ register_navbar_callbacks(app)
 # Main
 # =========================================
 if __name__ == "__main__":
-    app.run(debug=True, port=8055)
+    app.run(debug=False, dev_tools_ui=False, port=8055)

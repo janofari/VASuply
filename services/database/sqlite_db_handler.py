@@ -4,7 +4,7 @@ import sqlite3
 from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-USER_DB_PATH = r"services\database\users_sqlite.db"
+USER_DB_PATH = r"/home/ricardoml95/Documents/GitProjects/VASuply/services/database/users_sqlite.db"
 
 def connect_db():
     try:
