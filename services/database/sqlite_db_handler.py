@@ -4,7 +4,8 @@ import sqlite3
 from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-USER_DB_PATH = r"/home/ricardoml95/Documents/GitProjects/VASuply/services/database/users_sqlite.db"
+USER_DB_PATH = r"/home/janofari/Documentos/proyectos/VASuply/services/database/users_sqlite.db"  # r"/home/ricardoml95/Documents/GitProjects/VASuply/services/database/users_sqlite.db"
+
 
 def connect_db():
     try:
@@ -57,6 +58,7 @@ def connect_db():
         print(f"Error connecting to SQLite database: {e}")
         return None
 
+
 def insert_users(collection: str, data: dict):
     connection = connect_db()
     if connection is None:
@@ -74,17 +76,17 @@ def insert_users(collection: str, data: dict):
     connection.commit()
     connection.close()
 
+
 def select_db(collection: str, query: dict):
     connection = connect_db()
     if connection is None:
         return []
     cursor = connection.cursor()
-    cursor.execute(
-        f"SELECT * FROM {collection} WHERE usuario = ?", (query["usuario"],)
-    )
+    cursor.execute(f"SELECT * FROM {collection} WHERE usuario = ?", (query["usuario"],))
     result = cursor.fetchall()
     connection.close()
     return result
+
 
 def update_db(collection: str, data: dict, condition: dict):
     connection = connect_db()
@@ -98,6 +100,7 @@ def update_db(collection: str, data: dict, condition: dict):
     connection.commit()
     connection.close()
 
+
 def delete_db(collection: str, condition: dict):
     connection = connect_db()
     if connection is None:
@@ -108,6 +111,7 @@ def delete_db(collection: str, condition: dict):
     )
     connection.commit()
     connection.close()
+
 
 def validate_user(username: str, psw: str) -> bool:
     connection = connect_db()
@@ -123,6 +127,7 @@ def validate_user(username: str, psw: str) -> bool:
         return True
     return False
 
+
 def fetch_users():
     connection = connect_db()
     if connection is None:
@@ -133,12 +138,16 @@ def fetch_users():
     connection.close()
     return [{"nombre": user[0], "email": user[1], "rol": user[2]} for user in users]
 
+
 def insert_afectado(data: dict):
     connection = connect_db()
     if connection is None:
         return
     cursor = connection.cursor()
-    encrypted_dni = generate_password_hash(data["dni"])
+
+    dni = data.get("dni")
+    encrypted_dni = generate_password_hash(dni) if dni else None
+
     cursor.execute(
         "INSERT INTO afectados (afectado, ubi, necesidad, dni, tlf, dia_alta, direccion_afectada, poblacion, situacion_personal, dia_visita) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
@@ -152,10 +161,11 @@ def insert_afectado(data: dict):
             data.get("poblacion"),
             data.get("situacion_personal"),
             data.get("dia_visita"),
-        )
+        ),
     )
     connection.commit()
     connection.close()
+
 
 def fetch_afectados():
     connection = connect_db()
@@ -181,6 +191,7 @@ def fetch_afectados():
         }
         for row in rows
     ]
+
 
 def search_afectados(name=None, dni=None, tlf=None):
     connection = connect_db()
@@ -222,6 +233,7 @@ def search_afectados(name=None, dni=None, tlf=None):
         for row in rows
     ]
 
+
 def update_afectado(id, data: dict):
     connection = connect_db()
     if connection is None:
@@ -242,10 +254,11 @@ def update_afectado(id, data: dict):
             data.get("situacion_personal"),
             data.get("dia_visita"),
             id,
-        )
+        ),
     )
     connection.commit()
     connection.close()
+
 
 def delete_afectado(id):
     connection = connect_db()
@@ -255,6 +268,7 @@ def delete_afectado(id):
     cursor.execute("DELETE FROM afectados WHERE id=?", (id,))
     connection.commit()
     connection.close()
+
 
 def insert_enser(data: dict):
     connection = connect_db()
@@ -271,10 +285,11 @@ def insert_enser(data: dict):
             data["donante"],
             data["agraciado"],
             data.get("tipo"),
-        )
+        ),
     )
     connection.commit()
     connection.close()
+
 
 def fetch_enseres():
     connection = connect_db()
@@ -298,7 +313,16 @@ def fetch_enseres():
         for row in rows
     ]
 
-def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante=None, agraciado=None, tipo=None):
+
+def search_enseres(
+    enser=None,
+    cantidad=None,
+    medidas=None,
+    estado=None,
+    donante=None,
+    agraciado=None,
+    tipo=None,
+):
     connection = connect_db()
     if connection is None:
         return []
@@ -343,6 +367,7 @@ def search_enseres(enser=None, cantidad=None, medidas=None, estado=None, donante
         for row in rows
     ]
 
+
 def update_enser(id, data: dict):
     connection = connect_db()
     if connection is None:
@@ -359,10 +384,11 @@ def update_enser(id, data: dict):
             data["agraciado"],
             data.get("tipo"),
             id,
-        )
+        ),
     )
     connection.commit()
     connection.close()
+
 
 def delete_enser(id):
     connection = connect_db()
