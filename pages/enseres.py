@@ -44,7 +44,8 @@ def display_enseres(_):
                 editable=True,
                 filter_action="native",
                 filter_options={"placeholder_text": "filtrar por ..."},
-                style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "hidden", "boxShadow": "0 2px 12px #0002"},
+                page_size=20,
+                style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "hidden", "boxShadow": "0 2px 12px #0002", "tableLayout": "fixed", "width": "100%"},
                 style_header={
                         "backgroundColor": "#2e7d32",
                         "color": "white",
@@ -53,18 +54,22 @@ def display_enseres(_):
                         "fontSize": "1.1rem",
                         "border": "none"
                     },
-                    style_cell={
-                        "fontFamily": "Montserrat, sans-serif",
-                        "fontSize": "1rem",
-                        "padding": "10px",
-                    },
-                    style_data_conditional=[
-                        {
-                            "if": {"state": "selected"},
-                            "backgroundColor": "#f2f7fa",
-                            "border": "1px solid #1976d2"
-                        }
-                    ],
+                style_cell={
+                    "fontFamily": "Montserrat, sans-serif",
+                    "fontSize": "1rem",
+                    "padding": "8px",
+                    "maxWidth": "140px",
+                    "overflow": "hidden",
+                    "textOverflow": "ellipsis",
+                    "whiteSpace": "nowrap"
+                },
+                style_data_conditional=[
+                    {
+                        "if": {"state": "selected"},
+                        "backgroundColor": "#f2f7fa",
+                        "border": "1px solid #1976d2"
+                    }
+                ],
                 style_as_list_view=True,
             ),
             html.Div(
@@ -204,6 +209,14 @@ def search_enseres_callback(n_clicks, enser, cantidad, medidas, estado, donante,
                         data=enseres_match,
                         filter_action="native",
                         filter_options={"placeholder_text": "filtrar por ..."},
+                        page_size=20,
+                        style_table={"tableLayout": "fixed", "width": "100%"},
+                        style_cell={
+                            "maxWidth": "140px",
+                            "overflow": "hidden",
+                            "textOverflow": "ellipsis",
+                            "whiteSpace": "nowrap",
+                        },
                     ),
                 ]
             )

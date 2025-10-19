@@ -37,7 +37,8 @@ def display_page(pathname):
                     editable=True,
                     filter_action="native",
                     filter_options={"placeholder_text": "filtrar por ..."},
-                    style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "hidden", "boxShadow": "0 2px 12px #0002"},
+                    page_size=20,
+                    style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "hidden", "boxShadow": "0 2px 12px #0002", "tableLayout": "fixed", "width": "100%"},
                     style_header={
                         "backgroundColor": "#2e7d32",
                         "color": "white",
@@ -49,7 +50,11 @@ def display_page(pathname):
                     style_cell={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontSize": "1rem",
-                        "padding": "10px",
+                        "padding": "8px",
+                        "maxWidth": "200px",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis",
+                        "whiteSpace": "nowrap"
                     },
                     style_data_conditional=[
                         {
