@@ -217,7 +217,7 @@ def add_afectado(n_clicks, name, ubi, nec, dni, tlf, dia_alta, direccion, poblac
             except Exception:
                 return ""
         return ""
-    if n_clicks > 0 and name and ubi and nec and dni and tlf:
+    if n_clicks > 0 and name:
         new_row = {
             "afectado": name,
             "ubi": ubi,

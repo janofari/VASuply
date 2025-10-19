@@ -157,15 +157,10 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ti
     if (
         n_clicks > 0
         and enser
-        and cantidad
-        and medidas
-        and estado
-        and donante
-        and agraciado
     ):
         new_row = {
             "enser": enser,
-            "cantidad": cantidad,
+            "cantidad": cantidad if cantidad is not None else 1,
             "medidas": medidas,
             "estado": estado,
             "donante": donante,
