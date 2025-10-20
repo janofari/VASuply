@@ -1,11 +1,9 @@
 import dash
-from dash import Input, Output, State, callback, dash_table, dcc, html
+from dash import Input, Output, State, callback, dcc, html
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
-from flask import session
-from services.database.sqlite_db_handler import (
-    insert_afectado,
-)
+from datetime import date
+from services.database.sqlite_db_handler import insert_afectado
 
 
 dash.register_page(__name__, path="/formulario", name="Formulario")
@@ -15,6 +13,7 @@ layout = html.Div(
     [
         dbc.Container(
             [
+                # Logo superior
                 dbc.Row(
                     dbc.Col(
                         html.Img(
@@ -33,22 +32,39 @@ layout = html.Div(
                 ),
                 dbc.Form(
                     [
+                        # Nombre
                         html.Div(
                             [
                                 html.Label(
-                                    "Nombre completo",
-                                    htmlFor="afectado",
+                                    "Nombre",
+                                    htmlFor="nombre",
                                     style={"fontWeight": "bold", "fontSize": "1.1em"},
                                 ),
                                 dcc.Input(
-                                    id="afectado",
+                                    id="nombre",
                                     type="text",
                                     className="form-control",
-                                    placeholder="Ej. Juan Pérez",
                                 ),
                             ],
                             className="mb-3",
                         ),
+                        # Apellidos
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Apellidos",
+                                    htmlFor="apellidos",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="apellidos",
+                                    type="text",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
+                        # DNI o NIE
                         html.Div(
                             [
                                 html.Label(
@@ -60,11 +76,11 @@ layout = html.Div(
                                     id="DNI",
                                     type="text",
                                     className="form-control",
-                                    placeholder="Ej. 12345678A",
                                 ),
                             ],
                             className="mb-3",
                         ),
+                        # Teléfono
                         html.Div(
                             [
                                 html.Label(
@@ -76,27 +92,75 @@ layout = html.Div(
                                     id="telefono",
                                     type="text",
                                     className="form-control",
-                                    placeholder="Ej. 600123456",
                                 ),
                             ],
                             className="mb-3",
                         ),
+                        # Población
                         html.Div(
                             [
                                 html.Label(
-                                    "Ubicación",
-                                    htmlFor="ubicacion",
+                                    "Población",
+                                    htmlFor="poblacion",
                                     style={"fontWeight": "bold", "fontSize": "1.1em"},
                                 ),
                                 dcc.Input(
-                                    id="ubicacion",
+                                    id="poblacion",
                                     type="text",
                                     className="form-control",
-                                    placeholder="Ej. Orihuela, barrio San Antón",
                                 ),
                             ],
                             className="mb-3",
                         ),
+                        # Dirección afectada
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Dirección",
+                                    htmlFor="direccion_afectada",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="direccion_afectada",
+                                    type="text",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
+                        # Ubicación alternativa
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Ubicación alternativa (si te has desplazado)",
+                                    htmlFor="ubi",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="ubi",
+                                    type="text",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
+                        # Situación personal
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Situación personal",
+                                    htmlFor="situacion_personal",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="situacion_personal",
+                                    type="text",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
+                        # Necesidad
                         html.Div(
                             [
                                 html.Label(
@@ -113,6 +177,7 @@ layout = html.Div(
                             ],
                             className="mb-4",
                         ),
+                        # Botón de envío
                         html.Div(
                             [
                                 html.Button(
@@ -121,7 +186,7 @@ layout = html.Div(
                                     n_clicks=0,
                                     className="btn",
                                     style={
-                                        "backgroundColor": "#2b3d2c",  # verde clarito
+                                        "backgroundColor": "#2b3d2c",
                                         "color": "white",
                                         "fontWeight": "bold",
                                     },
@@ -129,6 +194,7 @@ layout = html.Div(
                             ],
                             className="d-flex justify-content-center",
                         ),
+                        # Mensaje de confirmación
                         html.Div(
                             id="mensaje_confirmacion",
                             className="text-success fw-bold text-center mt-4",
@@ -141,40 +207,75 @@ layout = html.Div(
     ]
 )
 
-# Comprobado que una vez que el registro haya sido satisfactorio, no se pueda volver a enviar
-# Callback para guardar en la base de datos
+
+# CALLBACK ACTUALIZADO
 @callback(
     [
         Output("mensaje_confirmacion", "children"),
-        Output("submit", "disabled"),  
+        Output("submit", "disabled"),
     ],
     Input("submit", "n_clicks"),
-    State("afectado", "value"),
+    State("nombre", "value"),
+    State("apellidos", "value"),
     State("DNI", "value"),
     State("telefono", "value"),
-    State("ubicacion", "value"),
+    State("poblacion", "value"),
+    State("direccion_afectada", "value"),
+    State("ubi", "value"),
+    State("situacion_personal", "value"),
     State("necesidad", "value"),
-    prevent_initial_call=True,  
+    prevent_initial_call=True,
 )
-def guardar_solicitud(n_clicks, afectado, dni, telefono, ubicacion, necesidad):
+def guardar_solicitud(
+    n_clicks,
+    nombre,
+    apellidos,
+    dni,
+    telefono,
+    poblacion,
+    direccion_afectada,
+    ubi,
+    situacion_personal,
+    necesidad,
+):
     if not n_clicks:
         raise PreventUpdate
 
     # Validación de campos obligatorios
-    if not afectado or not dni or not telefono or not necesidad:
+    if not (
+        nombre
+        and apellidos
+        and dni
+        and telefono
+        and poblacion
+        and direccion_afectada
+        and necesidad
+    ):
         return (
-            "⚠️ Por favor, completa al menos nombre, DNI, teléfono y necesidad.",
+            "⚠️ Por favor, completa todos los campos obligatorios: nombre, apellidos, DNI, teléfono, población, dirección afectada y necesidad.",
             False,
         )
 
     try:
+        # Generar campos derivados
+        dia_alta = date.today().isoformat()
+        afectado = f"{apellidos.strip()}, {nombre.strip()}"
+
         new_afectado = {
-            "afectado": afectado.strip(),
-            "ubi": ubicacion.strip() if ubicacion else None,
+            "afectado": afectado,
+            "ubi": ubi.strip() if ubi else None,
             "necesidad": necesidad.strip(),
             "dni": dni.strip(),
             "tlf": int(telefono) if telefono else None,
+            "dia_alta": dia_alta,
+            "direccion_afectada": direccion_afectada.strip(),
+            "poblacion": poblacion.strip(),
+            "situacion_personal": (
+                situacion_personal.strip() if situacion_personal else None
+            ),
+            "dia_visita": None,
         }
+
         insert_afectado(new_afectado)
 
         return (
