@@ -32,19 +32,20 @@ app.server.secret_key = os.urandom(24).hex()
 # Configuración de autenticación
 # =========================================
 
+
 @server.before_request
 def proteger_rutas():
-    path = request.path.rstrip('/')
+    path = request.path.rstrip("/")
 
     PREFIJOS_PUBLICOS = (
-        "/formulario",              
-        "/assets",                  
-        "/_dash-component-suites",   
-        "/_dash-layout",             
-        "/_dash-dependencies",       
-        "/_reload-hash",             
+        "/formulario",
+        "/assets",
+        "/_dash-component-suites",
+        "/_dash-layout",
+        "/_dash-dependencies",
+        "/_reload-hash",
         "/_favicon.ico",
-        "/_dash-update-component"              
+        "/_dash-update-component",
     )
 
     if path.startswith(PREFIJOS_PUBLICOS):
@@ -55,9 +56,10 @@ def proteger_rutas():
         return Response(
             "Acceso denegado. Debes iniciar sesión.",
             status=401,
-            headers={"WWW-Authenticate": 'Basic realm="Login Required"'}
+            headers={"WWW-Authenticate": 'Basic realm="Login Required"'},
         )
-    
+
+
 # =========================================
 # Layout principal
 # =========================================

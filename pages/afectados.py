@@ -21,182 +21,511 @@ def display_afectados(_):
     if session.get("user_group") == "Admin":
         return html.Div(
             [
-                html.H1("Gestión de Afectados", style={
-                    "fontFamily": "Montserrat, sans-serif",
-                    "fontWeight": "700",
-                    "fontSize": "2.1rem",
-                    "color": "#2e7d32",
-                    "marginBottom": "18px",
-                    "letterSpacing": "1px"
-                }),
-                dash_table.DataTable(
-                    id="afectados-table",
-                    columns=[
-                        {"name": "Día de alta", "id": "dia_alta", "editable": True},
-                        {"name": "Afectado", "id": "afectado", "editable": False},
-                        {"name": "Telefono", "id": "tlf", "editable": True},
-                        {"name": "Dirección afectada", "id": "direccion_afectada", "editable": True},
-                        {"name": "Ubicacion alternativa", "id": "ubi", "editable": True},
-                        {"name": "Población", "id": "poblacion", "editable": True},
-                        {"name": "Situación personal", "id": "situacion_personal", "editable": True},
-                        {"name": "Necesidad", "id": "necesidad", "editable": True},
-                        {"name": "Día de visita", "id": "dia_visita", "editable": True},
-                    ],
-                    data=fetch_afectados(),
-                    row_deletable=True,
-                    editable=True,
-                    filter_action="native",
-                    filter_options={"placeholder_text": "filtrar por ..."},
-                    page_size=10,  # límite de filas por página
-                    style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "auto", "boxShadow": "0 2px 12px #0002", "tableLayout": "fixed", "width": "100%"},
-                    style_header={
-                        "backgroundColor": "#2e7d32",
-                        "color": "white",
-                        "fontWeight": "bold",
+                html.H1(
+                    "Gestión de Afectados",
+                    style={
                         "fontFamily": "Montserrat, sans-serif",
-                        "fontSize": "1.1rem",
-                        "border": "none"
+                        "fontWeight": "700",
+                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "color": "#2e7d32",
+                        "marginBottom": "18px",
+                        "letterSpacing": "1px",
                     },
-                    style_cell={
-                        "fontFamily": "Montserrat, sans-serif",
-                        "fontSize": "1rem",
-                        "padding": "8px",
-                        "maxWidth": "300px",
-                        "overflow": "visible",
-                        "textOverflow": "clip",
-                        "whiteSpace": "normal",
-                        "height": "auto",
-                        "lineHeight": "18px",
-                    },
-                    style_data_conditional=[
-                        {
-                            "if": {"state": "selected"},
-                            "backgroundColor": "#f2f7fa",
-                            "border": "1px solid #1976d2"
-                        }
-                    ],
-                    style_as_list_view=True,
                 ),
                 html.Div(
                     [
-                        dcc.DatePickerSingle(
-                            id="new-afectado-dia-alta",
-                            placeholder="Día de alta",
-                            display_format="DD/MM/YYYY",
-                            style={"margin": "5px", "width": "160px", "height": "40px", "padding": "0", "borderRadius": "6px"},
-                            month_format="MM/YYYY",
-                            first_day_of_week=1,
-                        ),
-                        dcc.Input(id="new-afectado-name", type="text", placeholder="Nombre", style={"margin": "5px", "width": "180px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-tlf", type="text", placeholder="Telefono", style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-dni", type="text", placeholder="DNI", style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-direccion", type="text", placeholder="Dirección afectada", style={"margin": "5px", "width": "200px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-ubi", type="text", placeholder="Ubicacion alternativa", style={"margin": "5px", "width": "180px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-poblacion", type="text", placeholder="Población", style={"margin": "5px", "width": "140px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-situacion", type="text", placeholder="Situación personal", style={"margin": "5px", "width": "180px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.Input(id="new-afectado-nec", type="text", placeholder="Necesidad", style={"margin": "5px", "width": "180px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                        dcc.DatePickerSingle(
-                            id="new-afectado-dia-visita",
-                            placeholder="Día de visita",
-                            display_format="DD/MM/YYYY",
-                            style={"margin": "5px", "width": "160px", "height": "40px", "padding": "0", "borderRadius": "6px"},
-                            month_format="MM/YYYY",
-                            first_day_of_week=1,
-                        ),
-                        html.Button(
-                            "Añadir Afectado",
-                            id="add-afectado-btn",
-                            n_clicks=0,
-                            style={
-                                "margin": "5px 0 5px 10px",
-                                "padding": "8px 18px",
+                        dash_table.DataTable(
+                            id="afectados-table",
+                            columns=[
+                                {
+                                    "name": "Día de alta",
+                                    "id": "dia_alta",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Afectado",
+                                    "id": "afectado",
+                                    "editable": False,
+                                },
+                                {"name": "Teléfono", "id": "tlf", "editable": True},
+                                {
+                                    "name": "Dirección afectada",
+                                    "id": "direccion_afectada",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Ubicación alternativa",
+                                    "id": "ubi",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Población",
+                                    "id": "poblacion",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Situación personal",
+                                    "id": "situacion_personal",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Necesidad",
+                                    "id": "necesidad",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Día de visita",
+                                    "id": "dia_visita",
+                                    "editable": True,
+                                },
+                            ],
+                            data=fetch_afectados(),
+                            row_deletable=True,
+                            editable=True,
+                            filter_action="native",
+                            filter_options={"placeholder_text": "filtrar por ..."},
+                            page_size=10,
+                            style_table={
+                                "marginBottom": "20px",
+                                "borderRadius": "10px",
+                                "overflowX": "auto",
+                                "boxShadow": "0 2px 12px #0002",
+                            },
+                            style_header={
                                 "backgroundColor": "#2e7d32",
                                 "color": "white",
-                                "border": "none",
-                                "borderRadius": "6px",
                                 "fontWeight": "bold",
-                                "cursor": "pointer",
-                                "height": "40px",
-                                "boxShadow": "0 2px 8px #1976d233"
+                                "fontFamily": "Montserrat, sans-serif",
+                                "fontSize": "clamp(0.85rem, 2.5vw, 1.1rem)",
+                                "border": "none",
+                                "padding": "12px 8px",
+                                "whiteSpace": "normal",
+                                "height": "auto",
+                            },
+                            style_cell={
+                                "fontFamily": "Montserrat, sans-serif",
+                                "fontSize": "clamp(0.8rem, 2vw, 1rem)",
+                                "padding": "10px 8px",
+                                "minWidth": "120px",
+                                "maxWidth": "300px",
+                                "overflow": "hidden",
+                                "textOverflow": "ellipsis",
+                                "whiteSpace": "normal",
+                                "height": "auto",
+                                "lineHeight": "1.4",
+                            },
+                            style_data_conditional=[
+                                {
+                                    "if": {"state": "selected"},
+                                    "backgroundColor": "#f2f7fa",
+                                    "border": "1px solid #1976d2",
+                                }
+                            ],
+                            style_as_list_view=True,
+                        ),
+                    ],
+                    style={"overflowX": "auto", "width": "100%"},
+                ),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                dcc.DatePickerSingle(
+                                    id="new-afectado-dia-alta",
+                                    placeholder="Día de alta",
+                                    display_format="DD/MM/YYYY",
+                                    style={
+                                        "width": "100%",
+                                        "minWidth": "150px",
+                                    },
+                                    month_format="MM/YYYY",
+                                    first_day_of_week=1,
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 150px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-name",
+                                    type="text",
+                                    placeholder="Nombre",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-tlf",
+                                    type="text",
+                                    placeholder="Teléfono",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 120px",
+                                "minWidth": "120px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-dni",
+                                    type="text",
+                                    placeholder="DNI",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 120px",
+                                "minWidth": "120px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-direccion",
+                                    type="text",
+                                    placeholder="Dirección afectada",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 200px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-ubi",
+                                    type="text",
+                                    placeholder="Ubicación alternativa",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-poblacion",
+                                    type="text",
+                                    placeholder="Población",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 140px",
+                                "minWidth": "120px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-situacion",
+                                    type="text",
+                                    placeholder="Situación personal",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-nec",
+                                    type="text",
+                                    placeholder="Necesidad",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.DatePickerSingle(
+                                    id="new-afectado-dia-visita",
+                                    placeholder="Día de visita",
+                                    display_format="DD/MM/YYYY",
+                                    style={
+                                        "width": "100%",
+                                        "minWidth": "150px",
+                                    },
+                                    month_format="MM/YYYY",
+                                    first_day_of_week=1,
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 150px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Añadir Afectado",
+                                    id="add-afectado-btn",
+                                    n_clicks=0,
+                                    style={
+                                        "width": "100%",
+                                        "padding": "10px 18px",
+                                        "backgroundColor": "#2e7d32",
+                                        "color": "white",
+                                        "border": "none",
+                                        "borderRadius": "6px",
+                                        "fontWeight": "bold",
+                                        "cursor": "pointer",
+                                        "height": "44px",
+                                        "boxShadow": "0 2px 8px #1976d233",
+                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "🖨️ Imprimir",
+                                    id="export-csv-btn",
+                                    n_clicks=0,
+                                    style={
+                                        "width": "100%",
+                                        "padding": "10px 18px",
+                                        "backgroundColor": "#1976d2",
+                                        "color": "white",
+                                        "border": "none",
+                                        "borderRadius": "6px",
+                                        "fontWeight": "bold",
+                                        "cursor": "pointer",
+                                        "height": "44px",
+                                        "boxShadow": "0 2px 8px #1976d233",
+                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 120px",
+                                "minWidth": "100px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        dcc.Download(id="download-csv"),
+                    ],
+                    style={
+                        "display": "flex",
+                        "flexWrap": "wrap",
+                        "gap": "10px",
+                        "marginBottom": "25px",
+                        "background": "#f7f7f7",
+                        "padding": "15px",
+                        "borderRadius": "10px",
+                        "boxShadow": "0 2px 12px #0001",
+                    },
+                ),
+            ],
+            style={
+                "margin": "15px",
+                "background": "#fff",
+                "borderRadius": "12px",
+                "boxShadow": "0 2px 16px #0001",
+                "padding": "clamp(15px, 3vw, 20px)",
+            },
+        )
+    else:
+        return html.Div(
+            [
+                html.H1(
+                    "Búsqueda de Afectados",
+                    style={
+                        "fontFamily": "Montserrat, sans-serif",
+                        "fontWeight": "700",
+                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "color": "#2e7d32",
+                        "marginBottom": "18px",
+                        "letterSpacing": "1px",
+                    },
+                ),
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                dcc.Dropdown(
+                                    id="search-criteria-dropdown",
+                                    options=[
+                                        {"label": "Nombre", "value": "nombre"},
+                                        {"label": "DNI", "value": "dni"},
+                                        {"label": "Teléfono", "value": "tlf"},
+                                    ],
+                                    value="nombre",
+                                    clearable=False,
+                                    style={"width": "100%", "borderRadius": "6px"},
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 150px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="search-afectado-input",
+                                    type="text",
+                                    placeholder="Buscar...",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 200px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Buscar",
+                                    id="search-afectado-btn",
+                                    n_clicks=0,
+                                    style={
+                                        "width": "100%",
+                                        "padding": "10px 18px",
+                                        "backgroundColor": "#2e7d32",
+                                        "color": "white",
+                                        "border": "none",
+                                        "borderRadius": "6px",
+                                        "fontWeight": "bold",
+                                        "cursor": "pointer",
+                                        "height": "44px",
+                                        "boxShadow": "0 2px 8px #1976d233",
+                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 120px",
+                                "minWidth": "100px",
+                                "marginBottom": "10px",
                             },
                         ),
                     ],
                     style={
                         "display": "flex",
                         "flexWrap": "wrap",
-                        "alignItems": "center",
-                        "gap": "8px",
-                        "marginBottom": "25px",
-                        "background": "#f7f7f7",
-                        "padding": "15px 10px",
-                        "borderRadius": "10px",
-                        "boxShadow": "0 2px 12px #0001"
-                    },
-                ),
-            ],
-            style={"margin": "30px", "background": "#fff", "borderRadius": "12px", "boxShadow": "0 2px 16px #0001", "padding": "20px"}
-        )
-    else:
-        return html.Div(
-            [
-                html.H1("Busqueda de Afectados", style={
-                    "fontFamily": "Montserrat, sans-serif",
-                    "fontWeight": "700",
-                    "fontSize": "2.1rem",
-                    "color": "#2e7d32",
-                    "marginBottom": "18px",
-                    "letterSpacing": "1px"
-                }),
-                html.Div(
-                    [
-                        dcc.Dropdown(
-                            id="search-criteria-dropdown",
-                            options=[
-                                {"label": "Nombre", "value": "nombre"},
-                                {"label": "DNI", "value": "dni"},
-                                {"label": "Telefono", "value": "tlf"},
-                            ],
-                            value="nombre",
-                            clearable=False,
-                            style={"width": "200px", "marginRight": "10px", "borderRadius": "6px"},
-                        ),
-                        dcc.Input(
-                            id="search-afectado-input",
-                            type="text",
-                            placeholder="Buscar...",
-                            style={"marginRight": "10px", "width": "200px", "borderRadius": "6px", "border": "1px solid #bdbdbd"},
-                        ),
-                        html.Button(
-                            "Buscar Afectado",
-                            id="search-afectado-btn",
-                            n_clicks=0,
-                            style={
-                                "padding": "8px 18px",
-                                "backgroundColor": "#2e7d32",
-                                "color": "white",
-                                "border": "none",
-                                "borderRadius": "6px",
-                                "fontWeight": "bold",
-                                "cursor": "pointer",
-                                "height": "40px",
-                                "boxShadow": "0 2px 8px #1976d233"
-                            },
-                        ),
-                    ],
-                    style={
-                        "display": "flex",
-                        "alignItems": "center",
-                        "gap": "8px",
+                        "gap": "10px",
                         "marginBottom": "20px",
                         "background": "#f7f7f7",
-                        "padding": "12px 10px",
+                        "padding": "15px",
                         "borderRadius": "10px",
-                        "boxShadow": "0 2px 12px #0001"
+                        "boxShadow": "0 2px 12px #0001",
                     },
                 ),
                 html.Div(id="output-search-afectados"),
             ],
-            style={"margin": "30px", "background": "#fff", "borderRadius": "12px", "boxShadow": "0 2px 16px #0001", "padding": "20px"}
+            style={
+                "margin": "15px",
+                "background": "#fff",
+                "borderRadius": "12px",
+                "boxShadow": "0 2px 16px #0001",
+                "padding": "clamp(15px, 3vw, 20px)",
+            },
         )
 
 
@@ -215,8 +544,22 @@ def display_afectados(_):
     State("new-afectado-dia-visita", "date"),
     State("afectados-table", "data"),
 )
-def add_afectado(n_clicks, name, ubi, nec, dni, tlf, dia_alta, direccion, poblacion, situacion, dia_visita, rows):
+def add_afectado(
+    n_clicks,
+    name,
+    ubi,
+    nec,
+    dni,
+    tlf,
+    dia_alta,
+    direccion,
+    poblacion,
+    situacion,
+    dia_visita,
+    rows,
+):
     from datetime import datetime
+
     def format_date(date_str):
         if date_str:
             try:
@@ -224,6 +567,7 @@ def add_afectado(n_clicks, name, ubi, nec, dni, tlf, dia_alta, direccion, poblac
             except Exception:
                 return ""
         return ""
+
     if n_clicks > 0 and name:
         new_row = {
             "afectado": name,
@@ -261,41 +605,75 @@ def search_afectados_callback(n_clicks, criterio, valor):
         if afectados_match:
             return html.Div(
                 [
-                    html.H2(f"Afectado(s) encontrados = {len(afectados_match)}"),
-                    dash_table.DataTable(
-                        id="afectados-table-search",
-                        columns=[
-                            {"name": "Día de alta", "id": "dia_alta"},
-                            {"name": "Afectado", "id": "afectado"},
-                            {"name": "Telefono", "id": "tlf"},
-                            {"name": "Dirección afectada", "id": "direccion_afectada"},
-                            {"name": "Ubicacion alternativa", "id": "ubi"},
-                            {"name": "Población", "id": "poblacion"},
-                            {"name": "Situación personal", "id": "situacion_personal"},
-                            {"name": "Necesidad", "id": "necesidad"},
-                            {"name": "Día de visita", "id": "dia_visita"},
-                        ],
-                        data=afectados_match,
-                        filter_action="native",
-                        filter_options={"placeholder_text": "filtrar por ..."},
-                        page_size=10,
-                        style_table={"tableLayout": "fixed", "width": "100%", "overflow": "auto"},
-                        style_cell={
-                            "fontFamily": "Montserrat, sans-serif",
-                            "fontSize": "1rem",
-                            "padding": "6px",
-                            "maxWidth": "300px",
-                            "overflow": "visible",
-                            "textOverflow": "clip",
-                            "whiteSpace": "normal",
-                            "height": "auto",
-                            "lineHeight": "18px",
+                    html.H2(
+                        f"Afectado(s) encontrados = {len(afectados_match)}",
+                        style={
+                            "fontSize": "clamp(1.2rem, 4vw, 1.5rem)",
+                            "marginBottom": "15px",
                         },
+                    ),
+                    html.Div(
+                        [
+                            dash_table.DataTable(
+                                id="afectados-table-search",
+                                columns=[
+                                    {"name": "Día de alta", "id": "dia_alta"},
+                                    {"name": "Afectado", "id": "afectado"},
+                                    {"name": "Teléfono", "id": "tlf"},
+                                    {
+                                        "name": "Dirección afectada",
+                                        "id": "direccion_afectada",
+                                    },
+                                    {"name": "Ubicación alternativa", "id": "ubi"},
+                                    {"name": "Población", "id": "poblacion"},
+                                    {
+                                        "name": "Situación personal",
+                                        "id": "situacion_personal",
+                                    },
+                                    {"name": "Necesidad", "id": "necesidad"},
+                                    {"name": "Día de visita", "id": "dia_visita"},
+                                ],
+                                data=afectados_match,
+                                filter_action="native",
+                                filter_options={"placeholder_text": "filtrar por ..."},
+                                page_size=10,
+                                style_table={
+                                    "overflowX": "auto",
+                                    "width": "100%",
+                                },
+                                style_header={
+                                    "backgroundColor": "#2e7d32",
+                                    "color": "white",
+                                    "fontWeight": "bold",
+                                    "fontFamily": "Montserrat, sans-serif",
+                                    "fontSize": "clamp(0.85rem, 2.5vw, 1.1rem)",
+                                    "padding": "12px 8px",
+                                    "whiteSpace": "normal",
+                                    "height": "auto",
+                                },
+                                style_cell={
+                                    "fontFamily": "Montserrat, sans-serif",
+                                    "fontSize": "clamp(0.8rem, 2vw, 1rem)",
+                                    "padding": "10px 8px",
+                                    "minWidth": "120px",
+                                    "maxWidth": "300px",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                    "whiteSpace": "normal",
+                                    "height": "auto",
+                                    "lineHeight": "1.4",
+                                },
+                            ),
+                        ],
+                        style={"overflowX": "auto", "width": "100%"},
                     ),
                 ]
             )
         else:
-            return html.H2("No se encontraron afectados coincidentes")
+            return html.H2(
+                "No se encontraron afectados coincidentes",
+                style={"fontSize": "clamp(1.2rem, 4vw, 1.5rem)"},
+            )
 
 
 @callback(
@@ -315,3 +693,26 @@ def update_or_delete_afectados(previous_rows, current_rows):
     for id, data in current_set.items():
         if id in previous_set and data != previous_set[id]:
             update_afectado(id, data)
+
+
+@callback(
+    Output("download-csv", "data"),
+    Input("export-csv-btn", "n_clicks"),
+    State("afectados-table", "data"),
+    State("afectados-table", "derived_virtual_data"),
+    prevent_initial_call=True,
+)
+def export_to_csv(n_clicks, data, filtered_data):
+    if n_clicks > 0:
+        import pandas as pd
+        from datetime import datetime
+
+        data_to_export = filtered_data if filtered_data else data
+
+        if data_to_export:
+            df = pd.DataFrame(data_to_export)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            return dcc.send_data_frame(
+                df.to_csv, f"afectados_{timestamp}.csv", index=False
+            )
