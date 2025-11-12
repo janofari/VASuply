@@ -4,7 +4,7 @@ import sqlite3
 from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-USER_DB_PATH = r"/home/ricardoml95/Documents/GitProjects/VASuply/services/database/users_sqlite.db"
+USER_DB_PATH = r"C:\Users\ricar\OneDrive\Documentos\GitHub\VASuply\services\database\users_sqlite.db"
 
 
 def connect_db():
@@ -201,8 +201,8 @@ def search_afectados(name=None, dni=None, tlf=None):
     query = "SELECT * FROM afectados WHERE 1=1"
     params = []
     if name:
-        query += " AND afectado = ?"
-        params.append(name)
+        query += " AND afectado LIKE ?"
+        params.append(f"%{name}%")
     if dni:
         query += " AND dni IS NOT NULL"
         cursor.execute(query, params)
