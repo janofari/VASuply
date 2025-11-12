@@ -22,15 +22,48 @@ def display_afectados(_):
     if session.get("user_group") == "Admin":
         return html.Div(
             [
-                html.H1(
-                    "Gestión de Afectados",
-                    style={
+                html.H1("Gestión de Afectados", style={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontWeight": "700",
                         "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
                         "color": "#2e7d32",
                         "marginBottom": "18px",
                         "letterSpacing": "1px",
+                }),
+                dash_table.DataTable(
+                    id="afectados-table",
+                    columns=[
+                        {"name": "Día de alta", "id": "dia_alta", "editable": True},
+                        {"name": "Afectado", "id": "afectado", "editable": False},
+                        {"name": "Telefono", "id": "tlf", "editable": True},
+                        {"name": "Dirección afectada", "id": "direccion_afectada", "editable": True},
+                        {"name": "Ubicacion alternativa", "id": "ubi", "editable": True},
+                        {"name": "Población", "id": "poblacion", "editable": True},
+                        {"name": "Situación personal", "id": "situacion_personal", "editable": True},
+                        {"name": "Necesidad", "id": "necesidad", "editable": True},
+                        {"name": "Día de visita", "id": "dia_visita", "editable": True},
+                    ],
+                    data=fetch_afectados(),
+                    row_deletable=True,
+                    editable=True,
+                    filter_action="native",
+                    filter_options={
+                        "placeholder_text": "filtrar por ...",
+                        "case": "insensitive",
+                        "normalize": True
+                    },
+                    sort_action="native",
+                    sort_mode="single",
+                    page_size=10,  # límite de filas por página
+                    style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "auto", "boxShadow": "0 2px 12px #0002", "tableLayout": "fixed", "width": "100%"},
+                    style_header={
+                        "backgroundColor": "#2e7d32",
+                        "color": "white",
+                        "fontWeight": "bold",
+                        "fontFamily": "Montserrat, sans-serif",
+                        "fontSize": "1.1rem",
+                        "border": "none",
+                        "textAlign": "left",
                     },
                 ),
                 html.Div(
@@ -597,9 +630,8 @@ def normalize_text(text):
     if not text:
         return ""
     # Convertir a minúsculas y normalizar caracteres
-    return "".join(
-        c
-        for c in unicodedata.normalize("NFKD", str(text).lower())
+    return ''.join(
+        c for c in unicodedata.normalize('NFKD', str(text).lower())
         if not unicodedata.combining(c)
     )
 
@@ -614,13 +646,12 @@ def search_afectados_callback(n_clicks, criterio, valor):
     if n_clicks > 0 and valor:
         # Normalizar el valor de búsqueda
         valor_normalizado = normalize_text(valor)
-
+        
         # Obtener todos los afectados según el criterio
         if criterio == "nombre":
             afectados = search_afectados(name="")  # Traer todos para filtrar localmente
             afectados_match = [
-                afectado
-                for afectado in afectados
+                afectado for afectado in afectados 
                 if valor_normalizado in normalize_text(afectado["afectado"])
             ]
         elif criterio == "dni":
@@ -633,11 +664,43 @@ def search_afectados_callback(n_clicks, criterio, valor):
         if afectados_match:
             return html.Div(
                 [
-                    html.H2(
-                        f"Afectado(s) encontrados = {len(afectados_match)}",
-                        style={
+                    html.H2(f"Afectado(s) encontrados = {len(afectados_match)}", style={
                             "fontSize": "clamp(1.2rem, 4vw, 1.5rem)",
-                            "marginBottom": "15px",
+                            "marginBottom": "15px",}),
+                    dash_table.DataTable(
+                        id="afectados-table-search",
+                        columns=[
+                            {"name": "Día de alta", "id": "dia_alta"},
+                            {"name": "Afectado", "id": "afectado"},
+                            {"name": "Telefono", "id": "tlf"},
+                            {"name": "Dirección afectada", "id": "direccion_afectada"},
+                            {"name": "Ubicacion alternativa", "id": "ubi"},
+                            {"name": "Población", "id": "poblacion"},
+                            {"name": "Situación personal", "id": "situacion_personal"},
+                            {"name": "Necesidad", "id": "necesidad"},
+                            {"name": "Día de visita", "id": "dia_visita"},
+                        ],
+                        data=afectados_match,
+                        filter_action="native",
+                        filter_options={
+                            "placeholder_text": "filtrar por ...",
+                            "case": "insensitive",
+                            "normalize": True
+                        },
+                        sort_action="native",
+                        sort_mode="single",
+                        page_size=10,
+                        style_table={"tableLayout": "fixed", "width": "100%", "overflow": "auto"},
+                        style_cell={
+                            "fontFamily": "Montserrat, sans-serif",
+                            "fontSize": "1rem",
+                            "padding": "6px",
+                            "maxWidth": "300px",
+                            "overflow": "visible",
+                            "textOverflow": "clip",
+                            "whiteSpace": "normal",
+                            "height": "auto",
+                            "lineHeight": "18px",
                         },
                     ),
                     html.Div(
