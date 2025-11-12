@@ -9,6 +9,7 @@ from services.database.sqlite_db_handler import (
     delete_afectado,
 )
 from pages.components import navbar, register_navbar_callbacks
+import unicodedata
 
 
 dash.register_page(__name__, path="/afectados", name="Afectados")
@@ -83,7 +84,13 @@ def display_afectados(_):
                             row_deletable=True,
                             editable=True,
                             filter_action="native",
-                            filter_options={"placeholder_text": "filtrar por ..."},
+                            filter_options={
+                                "placeholder_text": "filtrar por ...",
+                                "case": "insensitive",
+                                "normalize": True,
+                            },
+                            sort_action="native",
+                            sort_mode="single",
                             page_size=10,
                             style_table={
                                 "marginBottom": "20px",
@@ -586,6 +593,17 @@ def add_afectado(
     return rows
 
 
+def normalize_text(text):
+    if not text:
+        return ""
+    # Convertir a minúsculas y normalizar caracteres
+    return "".join(
+        c
+        for c in unicodedata.normalize("NFKD", str(text).lower())
+        if not unicodedata.combining(c)
+    )
+
+
 @callback(
     Output("output-search-afectados", "children"),
     Input("search-afectado-btn", "n_clicks"),
@@ -594,14 +612,24 @@ def add_afectado(
 )
 def search_afectados_callback(n_clicks, criterio, valor):
     if n_clicks > 0 and valor:
+        # Normalizar el valor de búsqueda
+        valor_normalizado = normalize_text(valor)
+
+        # Obtener todos los afectados según el criterio
         if criterio == "nombre":
-            afectados_match = search_afectados(name=valor)
+            afectados = search_afectados(name="")  # Traer todos para filtrar localmente
+            afectados_match = [
+                afectado
+                for afectado in afectados
+                if valor_normalizado in normalize_text(afectado["afectado"])
+            ]
         elif criterio == "dni":
             afectados_match = search_afectados(dni=valor)
         elif criterio == "tlf":
             afectados_match = search_afectados(tlf=valor)
         else:
             afectados_match = []
+
         if afectados_match:
             return html.Div(
                 [
@@ -635,7 +663,13 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                 ],
                                 data=afectados_match,
                                 filter_action="native",
-                                filter_options={"placeholder_text": "filtrar por ..."},
+                                filter_options={
+                                    "placeholder_text": "filtrar por ...",
+                                    "case": "insensitive",
+                                    "normalize": True,
+                                },
+                                sort_action="native",
+                                sort_mode="single",
                                 page_size=10,
                                 style_table={
                                     "overflowX": "auto",
