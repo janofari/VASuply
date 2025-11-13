@@ -108,6 +108,7 @@ def display_afectados(_):
                                 "padding": "12px 8px",
                                 "whiteSpace": "normal",
                                 "height": "auto",
+                                "textAlign": "left",
                             },
                             style_cell={
                                 "fontFamily": "Montserrat, sans-serif",
@@ -120,6 +121,7 @@ def display_afectados(_):
                                 "whiteSpace": "normal",
                                 "height": "auto",
                                 "lineHeight": "1.4",
+                                "textAlign": "left",
                             },
                             style_data_conditional=[
                                 {
@@ -684,6 +686,7 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     "padding": "12px 8px",
                                     "whiteSpace": "normal",
                                     "height": "auto",
+                                    "textAlign": "left",
                                 },
                                 style_cell={
                                     "fontFamily": "Montserrat, sans-serif",
@@ -696,6 +699,7 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     "whiteSpace": "normal",
                                     "height": "auto",
                                     "lineHeight": "1.4",
+                                    "textAlign": "left",
                                 },
                             ),
                         ],

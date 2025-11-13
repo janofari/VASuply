@@ -20,131 +20,298 @@ layout = [navbar, html.Div(id="enseres-content")]
 def display_enseres(_):
     return html.Div(
         [
-            html.H1("Gestión de Enseres", style={
-                "fontFamily": "Montserrat, sans-serif",
-                "fontWeight": "700",
-                "fontSize": "2.1rem",
-                "color": "#2e7d32",
-                "marginBottom": "18px",
-                "letterSpacing": "1px"
-            }),
-            dash_table.DataTable(
-                id="enseres-table",
-                columns=[
-                    {"name": "Enser", "id": "enser", "editable": False},
-                    {"name": "Tipo", "id": "tipo", "editable": True},
-                    {"name": "Cantidad", "id": "cantidad", "editable": True},
-                    {"name": "Medidas", "id": "medidas", "editable": True},
-                    {"name": "Estado", "id": "estado", "editable": True},
-                    {"name": "Donante", "id": "donante", "editable": True},
-                    {"name": "Agraciado", "id": "agraciado", "editable": True}, 
-                ],
-                data=fetch_enseres(),
-                row_deletable=True,
-                editable=True,
-                filter_action="native",
-                filter_options={"placeholder_text": "filtrar por ..."},
-                page_size=10,
-                style_table={"marginBottom": "30px", "borderRadius": "10px", "overflow": "auto", "boxShadow": "0 2px 12px #0002", "tableLayout": "fixed", "width": "100%"},
-                style_header={
-                        "backgroundColor": "#2e7d32",
-                        "color": "white",
-                        "fontWeight": "bold",
-                        "fontFamily": "Montserrat, sans-serif",
-                        "fontSize": "1.1rem",
-                        "border": "none"
-                    },
-                style_cell={
+            html.H1(
+                "Gestión de Enseres",
+                style={
                     "fontFamily": "Montserrat, sans-serif",
-                    "fontSize": "1rem",
-                    "padding": "8px",
-                    "maxWidth": "220px",
-                    "overflow": "visible",
-                    "textOverflow": "clip",
-                    "whiteSpace": "normal",
-                    "height": "auto",
-                    "lineHeight": "18px",
+                    "fontWeight": "700",
+                    "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                    "color": "#2e7d32",
+                    "marginBottom": "18px",
+                    "letterSpacing": "1px",
                 },
-                style_data_conditional=[
-                    {
-                        "if": {"state": "selected"},
-                        "backgroundColor": "#f2f7fa",
-                        "border": "1px solid #1976d2"
-                    }
-                ],
-                style_as_list_view=True,
             ),
             html.Div(
                 [
-                    dcc.Input(id="new-enser-name", type="text", placeholder="Enser", style={"margin": "5px", "width": "140px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                    dcc.Dropdown(
-                        id="new-enser-tipo",
-                        options=[
-                            {"label": "Diverso", "value": "Diverso"},
-                            {"label": "Karcher", "value": "Karcher"},
-                            {"label": "Bomba Calor", "value": "Bomba Calor"},
-                            {"label": "Cama", "value": "Cama"},
-                            {"label": "Mueble", "value": "Mueble"},
-                            {"label": "Electrodoméstico", "value": "Electrodoméstico"},
-                            {"label": "Estufa", "value": "Estufa"},
+                    dash_table.DataTable(
+                        id="enseres-table",
+                        columns=[
+                            {"name": "Enser", "id": "enser", "editable": False},
+                            {"name": "Tipo", "id": "tipo", "editable": True},
+                            {"name": "Cantidad", "id": "cantidad", "editable": True},
+                            {"name": "Medidas", "id": "medidas", "editable": True},
+                            {"name": "Estado", "id": "estado", "editable": True},
+                            {"name": "Donante", "id": "donante", "editable": True},
+                            {"name": "Agraciado", "id": "agraciado", "editable": True},
                         ],
-                        placeholder="Tipo",
-                        style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px"},
-                        searchable=True,
-                        clearable=True,
-                        multi=False,
-                        persistence=True,
-                        persistence_type="session",
-                        disabled=False,
-                    ),
-                    dcc.Input(id="new-enser-cantidad", type="number", placeholder="Cantidad", min=0, style={"margin": "5px", "width": "100px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                    dcc.Input(id="new-enser-medidas", type="text", placeholder="Medidas", style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                    dcc.Dropdown(
-                        id="new-enser-estado",
-                        options=[
-                            {"label": "Perfecto", "value": "Perfecto"},
-                            {"label": "Bueno", "value": "Bueno"},
-                            {"label": "Aceptable", "value": "Aceptable"},
-                            {"label": "Malo", "value": "Malo"},
-                            {"label": "Deplorable", "value": "Deplorable"},
-                        ],
-                        placeholder="Estado",
-                        style={"margin": "5px", "width": "130px", "height": "40px", "borderRadius": "6px"},
-                    ),
-                    dcc.Input(id="new-enser-donante", type="text", placeholder="Donante", style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                    dcc.Input(id="new-enser-agraciado", type="text", placeholder="Agraciado", style={"margin": "5px", "width": "120px", "height": "40px", "borderRadius": "6px", "border": "1px solid #bdbdbd"}),
-                    html.Button(
-                        "Añadir Enser",
-                        id="add-enser-btn",
-                        n_clicks=0,
-                        style={
-                            "margin": "5px 0 5px 10px",
-                            "padding": "8px 18px",
+                        data=fetch_enseres(),
+                        row_deletable=True,
+                        editable=True,
+                        filter_action="native",
+                        filter_options={
+                            "placeholder_text": "filtrar por ...",
+                            "case": "insensitive",
+                            "normalize": True,
+                        },
+                        sort_action="native",
+                        sort_mode="single",
+                        page_size=10,
+                        style_table={
+                            "marginBottom": "20px",
+                            "borderRadius": "10px",
+                            "overflowX": "auto",
+                            "boxShadow": "0 2px 12px #0002",
+                        },
+                        style_header={
                             "backgroundColor": "#2e7d32",
                             "color": "white",
-                            "border": "none",
-                            "borderRadius": "6px",
                             "fontWeight": "bold",
-                            "cursor": "pointer",
-                            "height": "40px",
-                            "boxShadow": "0 2px 8px #1976d233"
+                            "fontFamily": "Montserrat, sans-serif",
+                            "fontSize": "clamp(0.85rem, 2.5vw, 1.1rem)",
+                            "border": "none",
+                            "padding": "12px 8px",
+                            "whiteSpace": "normal",
+                            "height": "auto",
+                            "textAlign": "left",
+                        },
+                        style_cell={
+                            "fontFamily": "Montserrat, sans-serif",
+                            "fontSize": "clamp(0.8rem, 2vw, 1rem)",
+                            "padding": "10px 8px",
+                            "minWidth": "120px",
+                            "maxWidth": "220px",
+                            "overflow": "hidden",
+                            "textOverflow": "ellipsis",
+                            "whiteSpace": "normal",
+                            "height": "auto",
+                            "lineHeight": "1.4",
+                            "textAlign": "left",
+                        },
+                        style_data_conditional=[
+                            {
+                                "if": {"state": "selected"},
+                                "backgroundColor": "#f2f7fa",
+                                "border": "1px solid #1976d2",
+                            }
+                        ],
+                        style_as_list_view=True,
+                    ),
+                ],
+                style={"overflowX": "auto", "width": "100%"},
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            dcc.Input(
+                                id="new-enser-name",
+                                type="text",
+                                placeholder="Enser",
+                                style={
+                                    "width": "100%",
+                                    "height": "40px",
+                                    "borderRadius": "6px",
+                                    "border": "1px solid #bdbdbd",
+                                    "padding": "0 10px",
+                                    "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 140px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id="new-enser-tipo",
+                                options=[
+                                    {"label": "Diverso", "value": "Diverso"},
+                                    {"label": "Karcher", "value": "Karcher"},
+                                    {"label": "Bomba Calor", "value": "Bomba Calor"},
+                                    {"label": "Cama", "value": "Cama"},
+                                    {"label": "Mueble", "value": "Mueble"},
+                                    {
+                                        "label": "Electrodoméstico",
+                                        "value": "Electrodoméstico",
+                                    },
+                                    {"label": "Estufa", "value": "Estufa"},
+                                ],
+                                placeholder="Tipo",
+                                style={"width": "100%", "borderRadius": "6px"},
+                                searchable=True,
+                                clearable=True,
+                                multi=False,
+                                persistence=True,
+                                persistence_type="session",
+                                disabled=False,
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 120px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Input(
+                                id="new-enser-cantidad",
+                                type="number",
+                                placeholder="Cantidad",
+                                min=0,
+                                style={
+                                    "width": "100%",
+                                    "height": "40px",
+                                    "borderRadius": "6px",
+                                    "border": "1px solid #bdbdbd",
+                                    "padding": "0 10px",
+                                    "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 100px",
+                            "minWidth": "100px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Input(
+                                id="new-enser-medidas",
+                                type="text",
+                                placeholder="Medidas",
+                                style={
+                                    "width": "100%",
+                                    "height": "40px",
+                                    "borderRadius": "6px",
+                                    "border": "1px solid #bdbdbd",
+                                    "padding": "0 10px",
+                                    "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 120px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Dropdown(
+                                id="new-enser-estado",
+                                options=[
+                                    {"label": "Perfecto", "value": "Perfecto"},
+                                    {"label": "Bueno", "value": "Bueno"},
+                                    {"label": "Aceptable", "value": "Aceptable"},
+                                    {"label": "Malo", "value": "Malo"},
+                                    {"label": "Deplorable", "value": "Deplorable"},
+                                ],
+                                placeholder="Estado",
+                                style={"width": "100%", "borderRadius": "6px"},
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 130px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Input(
+                                id="new-enser-donante",
+                                type="text",
+                                placeholder="Donante",
+                                style={
+                                    "width": "100%",
+                                    "height": "40px",
+                                    "borderRadius": "6px",
+                                    "border": "1px solid #bdbdbd",
+                                    "padding": "0 10px",
+                                    "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 120px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            dcc.Input(
+                                id="new-enser-agraciado",
+                                type="text",
+                                placeholder="Agraciado",
+                                style={
+                                    "width": "100%",
+                                    "height": "40px",
+                                    "borderRadius": "6px",
+                                    "border": "1px solid #bdbdbd",
+                                    "padding": "0 10px",
+                                    "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 120px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "Añadir Enser",
+                                id="add-enser-btn",
+                                n_clicks=0,
+                                style={
+                                    "width": "100%",
+                                    "padding": "10px 18px",
+                                    "backgroundColor": "#2e7d32",
+                                    "color": "white",
+                                    "border": "none",
+                                    "borderRadius": "6px",
+                                    "fontWeight": "bold",
+                                    "cursor": "pointer",
+                                    "height": "44px",
+                                    "boxShadow": "0 2px 8px #1976d233",
+                                    "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 140px",
+                            "minWidth": "120px",
+                            "marginBottom": "10px",
                         },
                     ),
                 ],
                 style={
                     "display": "flex",
                     "flexWrap": "wrap",
-                    "alignItems": "center",
-                    "gap": "8px",
+                    "gap": "10px",
                     "marginBottom": "25px",
                     "background": "#f7f7f7",
-                    "padding": "15px 10px",
+                    "padding": "15px",
                     "borderRadius": "10px",
-                    "boxShadow": "0 2px 12px #0001"
+                    "boxShadow": "0 2px 12px #0001",
                 },
             ),
         ],
-        style={"margin": "30px", "background": "#fff", "borderRadius": "12px", "boxShadow": "0 2px 16px #0001", "padding": "20px"}
+        style={
+            "margin": "15px",
+            "background": "#fff",
+            "borderRadius": "12px",
+            "boxShadow": "0 2px 16px #0001",
+            "padding": "clamp(15px, 3vw, 20px)",
+        },
     )
 
 
