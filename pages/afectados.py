@@ -10,6 +10,17 @@ from services.database.sqlite_db_handler import (
 )
 from pages.components import navbar, register_navbar_callbacks
 import unicodedata
+import pandas as pd
+from datetime import datetime
+
+
+def remove_accents(text: str) -> str:
+    replace_characters = {
+        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U'
+    }
+    return ''.join(replace_characters.get(c, c) for c in text)
+
 
 
 dash.register_page(__name__, path="/afectados", name="Afectados")
@@ -579,14 +590,14 @@ def add_afectado(
 
     if n_clicks > 0 and name:
         new_row = {
-            "afectado": name,
-            "ubi": ubi,
+            "afectado": remove_accents(name),
+            "ubi": remove_accents(ubi),
             "necesidad": nec,
             "dni": dni,
             "tlf": tlf,
             "dia_alta": format_date(dia_alta),
-            "direccion_afectada": direccion,
-            "poblacion": poblacion,
+            "direccion_afectada": remove_accents(direccion),
+            "poblacion": remove_accents(poblacion),
             "situacion_personal": situacion,
             "dia_visita": format_date(dia_visita),
         }
@@ -742,9 +753,6 @@ def update_or_delete_afectados(previous_rows, current_rows):
 )
 def export_to_csv(n_clicks, data, filtered_data):
     if n_clicks > 0:
-        import pandas as pd
-        from datetime import datetime
-
         data_to_export = filtered_data if filtered_data else data
 
         if data_to_export:

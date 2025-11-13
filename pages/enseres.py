@@ -9,12 +9,19 @@ from services.database.sqlite_db_handler import (
     delete_enser,
 )
 from pages.components import navbar, register_navbar_callbacks
-
+import pandas as pd
+from datetime import datetime
 
 dash.register_page(__name__, path="/enseres", name="Enseres")
 
 layout = [navbar, html.Div(id="enseres-content")]
 
+def remove_accents(text: str) -> str:
+    replace_characters = {
+        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U'
+    }
+    return ''.join(replace_characters.get(c, c) for c in text)
 
 @callback(Output("enseres-content", "children"), Input("url", "pathname"))
 def display_enseres(_):
@@ -292,6 +299,34 @@ def display_enseres(_):
                             "marginBottom": "10px",
                         },
                     ),
+                    html.Div(
+                        [
+                            html.Button(
+                                "🖨️ Imprimir",
+                                id="export-csv-btn-enseres",
+                                n_clicks=0,
+                                style={
+                                    "width": "100%",
+                                    "padding": "10px 18px",
+                                    "backgroundColor": "#1976d2",
+                                    "color": "white",
+                                    "border": "none",
+                                    "borderRadius": "6px",
+                                    "fontWeight": "bold",
+                                    "cursor": "pointer",
+                                    "height": "44px",
+                                    "boxShadow": "0 2px 8px #1976d233",
+                                    "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                },
+                            ),
+                        ],
+                        style={
+                            "flex": "1 1 120px",
+                            "minWidth": "100px",
+                            "marginBottom": "10px",
+                        },
+                    ),
+                    dcc.Download(id="download-csv-enseres"),
                 ],
                 style={
                     "display": "flex",
@@ -333,13 +368,13 @@ def add_enser(n_clicks, enser, cantidad, medidas, estado, donante, agraciado, ti
         and enser
     ):
         new_row = {
-            "enser": enser,
+            "enser": remove_accents(enser),
             "cantidad": cantidad if cantidad is not None else 1,
             "medidas": medidas,
             "estado": estado,
-            "donante": donante,
-            "agraciado": agraciado,
-            "tipo": tipo,
+            "donante": remove_accents(donante),
+            "agraciado": remove_accents(agraciado),
+            "tipo": remove_accents(tipo),
         }
         insert_enser(new_row)
         return fetch_enseres()
@@ -415,3 +450,23 @@ def update_or_delete_enseres(previous_rows, current_rows):
     for id, data in current_set.items():
         if id in previous_set and data != previous_set[id]:
             update_enser(id, data)
+
+
+@callback(
+    Output("download-csv-enseres", "data"),
+    Input("export-csv-btn-enseres", "n_clicks"),
+    State("enseres-table", "data"),
+    State("enseres-table", "derived_virtual_data"),
+    prevent_initial_call=True,
+)
+def export_to_csv(n_clicks, data, filtered_data):
+    if n_clicks > 0:
+        data_to_export = filtered_data if filtered_data else data
+
+        if data_to_export:
+            df = pd.DataFrame(data_to_export)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            return dcc.send_data_frame(
+                df.to_csv, f"enseres_{timestamp}.csv", index=False
+            )
