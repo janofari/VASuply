@@ -4,7 +4,8 @@ import sqlite3
 from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-USER_DB_PATH = r"/home/ricardoml95/Documents/GitProjects/VASuply/services/database/users_sqlite.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USER_DB_PATH = os.path.join(BASE_DIR, "users_sqlite.db")
 
 
 def connect_db():
@@ -52,7 +53,19 @@ def connect_db():
             )
             connection.commit()
             connection.close()
+
         connection = sqlite3.connect(USER_DB_PATH, check_same_thread=False)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+
+        # --- Asegurar columna 'baja' en afectados ---
+        cursor.execute("PRAGMA table_info(afectados)")
+        cols = [r[1] for r in cursor.fetchall()]
+        if "baja" not in cols:
+            cursor.execute("ALTER TABLE afectados ADD COLUMN baja INTEGER DEFAULT 0")
+            connection.commit()
+        # -------------------------------------------
+
         return connection
     except Exception as e:
         print(f"Error connecting to SQLite database: {e}")
@@ -148,8 +161,15 @@ def insert_afectado(data: dict):
     dni = data.get("dni")
     encrypted_dni = generate_password_hash(dni) if dni else None
 
+    baja = data.get("baja", 0)
+    if isinstance(baja, bool):
+        baja = 1 if baja else 0
+
     cursor.execute(
-        "INSERT INTO afectados (afectado, ubi, necesidad, dni, tlf, dia_alta, direccion_afectada, poblacion, situacion_personal, dia_visita) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO afectados "
+        "(afectado, ubi, necesidad, dni, tlf, dia_alta, direccion_afectada, "
+        "poblacion, situacion_personal, dia_visita, baja) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             data["afectado"],
             data["ubi"],
@@ -161,6 +181,7 @@ def insert_afectado(data: dict):
             data.get("poblacion"),
             data.get("situacion_personal"),
             data.get("dia_visita"),
+            baja,
         ),
     )
     connection.commit()
@@ -172,7 +193,11 @@ def fetch_afectados():
     if connection is None:
         return []
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM afectados")
+    cursor.execute(
+        "SELECT id, afectado, ubi, necesidad, dni, tlf, dia_alta, "
+        "direccion_afectada, poblacion, situacion_personal, dia_visita, baja "
+        "FROM afectados"
+    )
     rows = cursor.fetchall()
     connection.close()
     return [
@@ -188,6 +213,7 @@ def fetch_afectados():
             "poblacion": row[8],
             "situacion_personal": row[9],
             "dia_visita": row[10],
+            "baja": bool(row[11]) if row[11] is not None else False,
         }
         for row in rows
     ]
@@ -207,7 +233,6 @@ def search_afectados(name=None, dni=None, tlf=None):
         query += " AND dni IS NOT NULL"
         cursor.execute(query, params)
         rows = cursor.fetchall()
-        # Filtrar en Python porque el hash no se puede buscar directamente
         rows = [row for row in rows if check_password_hash(row[4], dni)]
     else:
         if tlf:
@@ -229,6 +254,7 @@ def search_afectados(name=None, dni=None, tlf=None):
             "poblacion": row[8],
             "situacion_personal": row[9],
             "dia_visita": row[10],
+            "baja": bool(row[11]) if len(row) > 11 and row[11] is not None else False,
         }
         for row in rows
     ]
@@ -239,9 +265,17 @@ def update_afectado(id, data: dict):
     if connection is None:
         return
     cursor = connection.cursor()
+
     encrypted_dni = generate_password_hash(data["dni"])
+
+    baja = data.get("baja", 0)
+    if isinstance(baja, bool):
+        baja = 1 if baja else 0
+
     cursor.execute(
-        "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=?, dia_alta=?, direccion_afectada=?, poblacion=?, situacion_personal=?, dia_visita=? WHERE id=?",
+        "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=?, "
+        "dia_alta=?, direccion_afectada=?, poblacion=?, situacion_personal=?, "
+        "dia_visita=?, baja=? WHERE id=?",
         (
             data["afectado"],
             data["ubi"],
@@ -253,6 +287,7 @@ def update_afectado(id, data: dict):
             data.get("poblacion"),
             data.get("situacion_personal"),
             data.get("dia_visita"),
+            baja,
             id,
         ),
     )

@@ -1,6 +1,10 @@
 import dash
 from dash import Input, Output, State, callback, dash_table, dcc, html
 from flask import session
+from dash.exceptions import PreventUpdate
+import unicodedata
+import pandas as pd
+from datetime import datetime
 from services.database.sqlite_db_handler import (
     fetch_afectados,
     insert_afectado,
@@ -9,18 +13,22 @@ from services.database.sqlite_db_handler import (
     delete_afectado,
 )
 from pages.components import navbar, register_navbar_callbacks
-import unicodedata
-import pandas as pd
-from datetime import datetime
 
 
 def remove_accents(text: str) -> str:
     replace_characters = {
-        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U'
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+        "Á": "A",
+        "É": "E",
+        "Í": "I",
+        "Ó": "O",
+        "Ú": "U",
     }
-    return ''.join(replace_characters.get(c, c) for c in text)
-
+    return "".join(replace_characters.get(c, c) for c in text)
 
 
 dash.register_page(__name__, path="/afectados", name="Afectados")
@@ -46,6 +54,31 @@ def display_afectados(_):
                 ),
                 html.Div(
                     [
+                        # Popup de confirmación
+                        dcc.ConfirmDialog(
+                            id="afectados-delete-confirm",
+                            message=(
+                                "¿Seguro que quieres eliminar a este afectado o afectados? "
+                                "Esta acción NO se puede deshacer."
+                            ),
+                        ),
+                        # Botón de borrado
+                        html.Button(
+                            "🗑️ Eliminar afectados seleccionados",
+                            id="afectados-delete-button",
+                            n_clicks=0,
+                            style={
+                                "marginBottom": "10px",
+                                "backgroundColor": "#c62828",
+                                "color": "white",
+                                "border": "none",
+                                "padding": "8px 16px",
+                                "borderRadius": "6px",
+                                "cursor": "pointer",
+                                "fontFamily": "Montserrat, sans-serif",
+                                "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                            },
+                        ),
                         dash_table.DataTable(
                             id="afectados-table",
                             columns=[
@@ -57,7 +90,7 @@ def display_afectados(_):
                                 {
                                     "name": "Afectado",
                                     "id": "afectado",
-                                    "editable": False,
+                                    "editable": True,
                                 },
                                 {"name": "Teléfono", "id": "tlf", "editable": True},
                                 {
@@ -90,10 +123,17 @@ def display_afectados(_):
                                     "id": "dia_visita",
                                     "editable": True,
                                 },
+                                {
+                                    "name": "Baja",
+                                    "id": "baja",
+                                    "type": "numeric",
+                                    "editable": True,
+                                },
                             ],
                             data=fetch_afectados(),
-                            row_deletable=True,
                             editable=True,
+                            row_selectable="multi",
+                            selected_rows=[],
                             filter_action="native",
                             filter_options={
                                 "placeholder_text": "filtrar por ...",
@@ -134,11 +174,78 @@ def display_afectados(_):
                                 "lineHeight": "1.4",
                                 "textAlign": "left",
                             },
+                            style_cell_conditional=[
+                                # Día de alta
+                                {
+                                    "if": {"column_id": "dia_alta"},
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Teléfono
+                                {
+                                    "if": {"column_id": "tlf"},
+                                    "minWidth": "110px",
+                                    "width": "110px",
+                                    "maxWidth": "110px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Día de visita
+                                {
+                                    "if": {"column_id": "dia_visita"},
+                                    "minWidth": "100px",
+                                    "width": "100px",
+                                    "maxWidth": "100px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Población
+                                {
+                                    "if": {"column_id": "poblacion"},
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Baja
+                                {
+                                    "if": {"column_id": "baja"},
+                                    "minWidth": "80px",
+                                    "width": "80px",
+                                    "maxWidth": "80px",
+                                    "textAlign": "center",
+                                    "whiteSpace": "nowrap",
+                                },
+                            ],
                             style_data_conditional=[
                                 {
                                     "if": {"state": "selected"},
                                     "backgroundColor": "#f2f7fa",
                                     "border": "1px solid #1976d2",
+                                },
+                                {
+                                    "if": {"state": "selected"},
+                                    "backgroundColor": "#f2f7fa",
+                                    "border": "1px solid #1976d2",
+                                },
+                                {
+                                    "if": {"filter_query": "{baja} = 1"},
+                                    "backgroundColor": "#eeeeee",
+                                    "color": "#757575",
+                                },
+                            ],
+                            css=[
+                                {
+                                    "selector": ".dash-table-container .Select-menu-outer",
+                                    "rule": "display: block !important; position: fixed !important; z-index: 9999;",
                                 }
                             ],
                             style_as_list_view=True,
@@ -550,8 +657,27 @@ def display_afectados(_):
 
 
 @callback(
+    Output("afectados-delete-confirm", "displayed"),
+    Input("afectados-delete-button", "n_clicks"),
+    State("afectados-table", "selected_rows"),
+    prevent_initial_call=True,
+)
+def show_delete_confirm(n_clicks, selected_rows):
+    if not n_clicks:
+        raise PreventUpdate
+
+    # Si no hay filas seleccionadas, no mostramos el popup
+    if not selected_rows:
+        return False
+
+    # Hay al menos una fila seleccionada -> mostrar popup
+    return True
+
+
+@callback(
     Output("afectados-table", "data"),
     Input("add-afectado-btn", "n_clicks"),
+    Input("afectados-delete-confirm", "submit_n_clicks"),
     State("new-afectado-name", "value"),
     State("new-afectado-ubi", "value"),
     State("new-afectado-nec", "value"),
@@ -563,9 +689,12 @@ def display_afectados(_):
     State("new-afectado-situacion", "value"),
     State("new-afectado-dia-visita", "date"),
     State("afectados-table", "data"),
+    State("afectados-table", "selected_rows"),
+    State("afectados-table", "derived_virtual_data"),
 )
-def add_afectado(
-    n_clicks,
+def add_or_delete_afectado(
+    add_clicks,
+    delete_confirm_clicks,
     name,
     ubi,
     nec,
@@ -577,10 +706,13 @@ def add_afectado(
     situacion,
     dia_visita,
     rows,
+    selected_rows,
+    virtual_rows,
 ):
     from datetime import datetime
+    import dash
 
-    def format_date(date_str):
+    def format_date(date_str: str | None) -> str:
         if date_str:
             try:
                 return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
@@ -588,21 +720,63 @@ def add_afectado(
                 return ""
         return ""
 
-    if n_clicks > 0 and name:
-        new_row = {
-            "afectado": remove_accents(name),
-            "ubi": remove_accents(ubi),
-            "necesidad": nec,
-            "dni": dni,
-            "tlf": tlf,
-            "dia_alta": format_date(dia_alta),
-            "direccion_afectada": remove_accents(direccion),
-            "poblacion": remove_accents(poblacion),
-            "situacion_personal": situacion,
-            "dia_visita": format_date(dia_visita),
-        }
-        insert_afectado(new_row)
-        return fetch_afectados()
+    if rows is None:
+        rows = []
+
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return rows
+
+    triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    # 1) Alta de afectado
+    if triggered_id == "add-afectado-btn":
+        if add_clicks and name:
+            new_row = {
+                "afectado": remove_accents(name),
+                "ubi": remove_accents(ubi) if ubi else None,
+                "necesidad": nec,
+                "dni": dni,
+                "tlf": tlf,
+                "dia_alta": format_date(dia_alta),
+                "direccion_afectada": remove_accents(direccion) if direccion else None,
+                "poblacion": remove_accents(poblacion) if poblacion else None,
+                "situacion_personal": situacion,
+                "dia_visita": format_date(dia_visita),
+                # NUEVO: siempre entra como no de baja (0)
+                "baja": 0,
+            }
+            insert_afectado(new_row)
+            # Recargamos desde BD para traer id, baja, etc. coherentes
+            return fetch_afectados()
+        return rows
+
+    # 2) Borrado de afectados seleccionados (tras confirmar)
+    if triggered_id == "afectados-delete-confirm":
+        if not delete_confirm_clicks:
+            return rows
+        if not selected_rows or not virtual_rows:
+            return rows
+
+        # selected_rows son índices sobre derived_virtual_data (virtual_rows)
+        ids_to_delete: list[int] = []
+        for idx in selected_rows:
+            if 0 <= idx < len(virtual_rows):
+                rid = virtual_rows[idx].get("id")
+                if rid is not None:
+                    ids_to_delete.append(rid)
+
+        if not ids_to_delete:
+            return rows
+
+        # Borrado en BD
+        for afectado_id in ids_to_delete:
+            delete_afectado(afectado_id)
+
+        # Borrado en la tabla (front): filtramos por id
+        new_rows = [r for r in rows if r.get("id") not in ids_to_delete]
+        return new_rows
+
     return rows
 
 

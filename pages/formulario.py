@@ -258,7 +258,7 @@ def guardar_solicitud(
 
     try:
         # Generar campos derivados
-        dia_alta = date.today().isoformat()
+        dia_alta = date.today().strftime("%d/%m/%Y")
         afectado = f"{apellidos.strip()}, {nombre.strip()}"
 
         new_afectado = {
