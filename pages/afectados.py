@@ -31,6 +31,9 @@ def remove_accents(text: str) -> str:
     return "".join(replace_characters.get(c, c) for c in text)
 
 
+
+
+
 dash.register_page(__name__, path="/afectados", name="Afectados")
 
 layout = [navbar, html.Div(id="afectados-content")]
@@ -46,7 +49,7 @@ def display_afectados(_):
                     style={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontWeight": "700",
-                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "fontSize": "clamp(1.2rem, 4vw, 1.68rem)",
                         "color": "#2e7d32",
                         "marginBottom": "18px",
                         "letterSpacing": "1px",
@@ -76,7 +79,7 @@ def display_afectados(_):
                                 "borderRadius": "6px",
                                 "cursor": "pointer",
                                 "fontFamily": "Montserrat, sans-serif",
-                                "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                             },
                         ),
                         dash_table.DataTable(
@@ -93,6 +96,11 @@ def display_afectados(_):
                                     "editable": True,
                                 },
                                 {"name": "Teléfono", "id": "tlf", "editable": True},
+                                {
+                                    "name": "Email",
+                                    "id": "email",
+                                    "editable": True,
+                                },
                                 {
                                     "name": "Dirección afectada",
                                     "id": "direccion_afectada",
@@ -111,6 +119,11 @@ def display_afectados(_):
                                 {
                                     "name": "Situación personal",
                                     "id": "situacion_personal",
+                                    "editable": True,
+                                },
+                                {
+                                    "name": "Personas a cargo",
+                                    "id": "personas_a_cargo",
                                     "editable": True,
                                 },
                                 {
@@ -154,7 +167,7 @@ def display_afectados(_):
                                 "color": "white",
                                 "fontWeight": "bold",
                                 "fontFamily": "Montserrat, sans-serif",
-                                "fontSize": "clamp(0.85rem, 2.5vw, 1.1rem)",
+                                "fontSize": "clamp(0.68rem, 2vw, 0.88rem)",
                                 "border": "none",
                                 "padding": "12px 8px",
                                 "whiteSpace": "normal",
@@ -163,7 +176,7 @@ def display_afectados(_):
                             },
                             style_cell={
                                 "fontFamily": "Montserrat, sans-serif",
-                                "fontSize": "clamp(0.8rem, 2vw, 1rem)",
+                                "fontSize": "clamp(0.64rem, 1.6vw, 0.8rem)",
                                 "padding": "10px 8px",
                                 "minWidth": "120px",
                                 "maxWidth": "300px",
@@ -198,9 +211,9 @@ def display_afectados(_):
                                 # Día de visita
                                 {
                                     "if": {"column_id": "dia_visita"},
-                                    "minWidth": "100px",
-                                    "width": "100px",
-                                    "maxWidth": "100px",
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
                                     "whiteSpace": "nowrap",
                                     "overflow": "hidden",
                                     "textOverflow": "ellipsis",
@@ -260,7 +273,7 @@ def display_afectados(_):
                                 dcc.DatePickerSingle(
                                     id="new-afectado-dia-alta",
                                     placeholder="Día de alta",
-                                    display_format="DD/MM/YYYY",
+                                    display_format="YYYY-MM-DD",
                                     style={
                                         "width": "100%",
                                         "minWidth": "150px",
@@ -287,7 +300,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -309,7 +322,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -331,7 +344,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -353,7 +366,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -375,7 +388,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -397,7 +410,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -419,7 +432,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -441,7 +454,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -456,7 +469,7 @@ def display_afectados(_):
                                 dcc.DatePickerSingle(
                                     id="new-afectado-dia-visita",
                                     placeholder="Día de visita",
-                                    display_format="DD/MM/YYYY",
+                                    display_format="YYYY-MM-DD",
                                     style={
                                         "width": "100%",
                                         "minWidth": "150px",
@@ -467,6 +480,50 @@ def display_afectados(_):
                             ],
                             style={
                                 "flex": "1 1 150px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-personas-cargo",
+                                    type="text",
+                                    placeholder="Personas a cargo",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-email",
+                                    type="email",
+                                    placeholder="Email",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
                                 "minWidth": "150px",
                                 "marginBottom": "10px",
                             },
@@ -488,7 +545,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -515,7 +572,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -555,7 +612,7 @@ def display_afectados(_):
                     style={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontWeight": "700",
-                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "fontSize": "clamp(1.2rem, 4vw, 1.68rem)",
                         "color": "#2e7d32",
                         "marginBottom": "18px",
                         "letterSpacing": "1px",
@@ -595,7 +652,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -622,7 +679,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -688,6 +745,8 @@ def show_delete_confirm(n_clicks, selected_rows):
     State("new-afectado-poblacion", "value"),
     State("new-afectado-situacion", "value"),
     State("new-afectado-dia-visita", "date"),
+    State("new-afectado-personas-cargo", "value"),
+    State("new-afectado-email", "value"),
     State("afectados-table", "data"),
     State("afectados-table", "selected_rows"),
     State("afectados-table", "derived_virtual_data"),
@@ -705,20 +764,14 @@ def add_or_delete_afectado(
     poblacion,
     situacion,
     dia_visita,
+    personas_a_cargo,
+    email,
     rows,
     selected_rows,
     virtual_rows,
 ):
     from datetime import datetime
     import dash
-
-    def format_date(date_str: str | None) -> str:
-        if date_str:
-            try:
-                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
-            except Exception:
-                return ""
-        return ""
 
     if rows is None:
         rows = []
@@ -738,11 +791,13 @@ def add_or_delete_afectado(
                 "necesidad": nec,
                 "dni": dni,
                 "tlf": tlf,
-                "dia_alta": format_date(dia_alta),
+                "dia_alta": dia_alta,  # Guardar en formato ISO (YYYY-MM-DD)
                 "direccion_afectada": remove_accents(direccion) if direccion else None,
                 "poblacion": remove_accents(poblacion) if poblacion else None,
                 "situacion_personal": situacion,
-                "dia_visita": format_date(dia_visita),
+                "dia_visita": dia_visita,  # Guardar en formato ISO (YYYY-MM-DD)
+                "personas_a_cargo": personas_a_cargo,
+                "email": email,
                 # NUEVO: siempre entra como no de baja (0)
                 "baja": 0,
             }
@@ -835,6 +890,7 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     {"name": "Día de alta", "id": "dia_alta"},
                                     {"name": "Afectado", "id": "afectado"},
                                     {"name": "Teléfono", "id": "tlf"},
+                                    {"name": "Email", "id": "email"},
                                     {
                                         "name": "Dirección afectada",
                                         "id": "direccion_afectada",
@@ -844,6 +900,10 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     {
                                         "name": "Situación personal",
                                         "id": "situacion_personal",
+                                    },
+                                    {
+                                        "name": "Personas a cargo",
+                                        "id": "personas_a_cargo",
                                     },
                                     {"name": "Necesidad", "id": "necesidad"},
                                     {"name": "Día de visita", "id": "dia_visita"},

@@ -35,7 +35,9 @@ def connect_db():
                         direccion_afectada TEXT,
                         poblacion TEXT,
                         situacion_personal TEXT,
-                        dia_visita TEXT
+                        dia_visita TEXT,
+                        personas_a_cargo TEXT,
+                        email TEXT
                     )"""
             )
             # Crear tabla enseres si no existe
@@ -63,6 +65,16 @@ def connect_db():
         cols = [r[1] for r in cursor.fetchall()]
         if "baja" not in cols:
             cursor.execute("ALTER TABLE afectados ADD COLUMN baja INTEGER DEFAULT 0")
+            connection.commit()
+        
+        # --- Asegurar columnas 'personas_a_cargo' y 'email' en afectados ---
+        cursor.execute("PRAGMA table_info(afectados)")
+        cols = [r[1] for r in cursor.fetchall()]
+        if "personas_a_cargo" not in cols:
+            cursor.execute("ALTER TABLE afectados ADD COLUMN personas_a_cargo TEXT")
+            connection.commit()
+        if "email" not in cols:
+            cursor.execute("ALTER TABLE afectados ADD COLUMN email TEXT")
             connection.commit()
         # -------------------------------------------
 
@@ -168,8 +180,8 @@ def insert_afectado(data: dict):
     cursor.execute(
         "INSERT INTO afectados "
         "(afectado, ubi, necesidad, dni, tlf, dia_alta, direccion_afectada, "
-        "poblacion, situacion_personal, dia_visita, baja) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "poblacion, situacion_personal, dia_visita, baja, personas_a_cargo, email) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             data["afectado"],
             data["ubi"],
@@ -182,6 +194,8 @@ def insert_afectado(data: dict):
             data.get("situacion_personal"),
             data.get("dia_visita"),
             baja,
+            data.get("personas_a_cargo"),
+            data.get("email"),
         ),
     )
     connection.commit()
@@ -195,7 +209,8 @@ def fetch_afectados():
     cursor = connection.cursor()
     cursor.execute(
         "SELECT id, afectado, ubi, necesidad, dni, tlf, dia_alta, "
-        "direccion_afectada, poblacion, situacion_personal, dia_visita, baja "
+        "direccion_afectada, poblacion, situacion_personal, dia_visita, baja, "
+        "personas_a_cargo, email "
         "FROM afectados"
     )
     rows = cursor.fetchall()
@@ -213,7 +228,9 @@ def fetch_afectados():
             "poblacion": row[8],
             "situacion_personal": row[9],
             "dia_visita": row[10],
-            "baja": bool(row[11]) if row[11] is not None else False,
+            "baja": row[11] if row[11] is not None else 0,
+            "personas_a_cargo": row[12],
+            "email": row[13],
         }
         for row in rows
     ]
@@ -254,7 +271,9 @@ def search_afectados(name=None, dni=None, tlf=None):
             "poblacion": row[8],
             "situacion_personal": row[9],
             "dia_visita": row[10],
-            "baja": bool(row[11]) if len(row) > 11 and row[11] is not None else False,
+            "baja": row[11] if len(row) > 11 and row[11] is not None else 0,
+            "personas_a_cargo": row[12] if len(row) > 12 else None,
+            "email": row[13] if len(row) > 13 else None,
         }
         for row in rows
     ]
@@ -275,7 +294,7 @@ def update_afectado(id, data: dict):
     cursor.execute(
         "UPDATE afectados SET afectado=?, ubi=?, necesidad=?, dni=?, tlf=?, "
         "dia_alta=?, direccion_afectada=?, poblacion=?, situacion_personal=?, "
-        "dia_visita=?, baja=? WHERE id=?",
+        "dia_visita=?, baja=?, personas_a_cargo=?, email=? WHERE id=?",
         (
             data["afectado"],
             data["ubi"],
@@ -288,6 +307,8 @@ def update_afectado(id, data: dict):
             data.get("situacion_personal"),
             data.get("dia_visita"),
             baja,
+            data.get("personas_a_cargo"),
+            data.get("email"),
             id,
         ),
     )
