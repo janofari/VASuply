@@ -31,9 +31,6 @@ def remove_accents(text: str) -> str:
     return "".join(replace_characters.get(c, c) for c in text)
 
 
-
-
-
 dash.register_page(__name__, path="/afectados", name="Afectados")
 
 layout = [navbar, html.Div(id="afectados-content")]
@@ -155,6 +152,7 @@ def display_afectados(_):
                             },
                             sort_action="native",
                             sort_mode="single",
+                            sort_by=[{"column_id": "dia_alta", "direction": "desc"}],
                             page_size=10,
                             style_table={
                                 "marginBottom": "20px",
@@ -750,6 +748,7 @@ def show_delete_confirm(n_clicks, selected_rows):
     State("afectados-table", "data"),
     State("afectados-table", "selected_rows"),
     State("afectados-table", "derived_virtual_data"),
+    State("afectados-table", "derived_virtual_selected_rows"),
 )
 def add_or_delete_afectado(
     add_clicks,
@@ -769,9 +768,8 @@ def add_or_delete_afectado(
     rows,
     selected_rows,
     virtual_rows,
+    virtual_selected_rows,
 ):
-    from datetime import datetime
-    import dash
 
     if rows is None:
         rows = []
@@ -810,14 +808,18 @@ def add_or_delete_afectado(
     if triggered_id == "afectados-delete-confirm":
         if not delete_confirm_clicks:
             return rows
-        if not selected_rows or not virtual_rows:
+
+        # Usar siempre los índices sobre derived_virtual_data,
+        # que son los correctos cuando hay sorting/filters
+        if not virtual_selected_rows:
             return rows
 
-        # selected_rows son índices sobre derived_virtual_data (virtual_rows)
+        data_for_indices = virtual_rows if virtual_rows is not None else rows
+
         ids_to_delete: list[int] = []
-        for idx in selected_rows:
-            if 0 <= idx < len(virtual_rows):
-                rid = virtual_rows[idx].get("id")
+        for idx in virtual_selected_rows:
+            if 0 <= idx < len(data_for_indices):
+                rid = data_for_indices[idx].get("id")
                 if rid is not None:
                     ids_to_delete.append(rid)
 
@@ -828,9 +830,8 @@ def add_or_delete_afectado(
         for afectado_id in ids_to_delete:
             delete_afectado(afectado_id)
 
-        # Borrado en la tabla (front): filtramos por id
-        new_rows = [r for r in rows if r.get("id") not in ids_to_delete]
-        return new_rows
+        # Recargar desde BD tras borrar
+        return fetch_afectados()
 
     return rows
 
