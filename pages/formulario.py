@@ -96,6 +96,22 @@ layout = html.Div(
                             ],
                             className="mb-3",
                         ),
+                        # Email
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Email",
+                                    htmlFor="email",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="email",
+                                    type="email",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
                         # Población
                         html.Div(
                             [
@@ -154,6 +170,22 @@ layout = html.Div(
                                 ),
                                 dcc.Input(
                                     id="situacion_personal",
+                                    type="text",
+                                    className="form-control",
+                                ),
+                            ],
+                            className="mb-3",
+                        ),
+                        # Personas a cargo
+                        html.Div(
+                            [
+                                html.Label(
+                                    "Personas a cargo (niños, ancianos, dependientes...)",
+                                    htmlFor="personas_a_cargo",
+                                    style={"fontWeight": "bold", "fontSize": "1.1em"},
+                                ),
+                                dcc.Input(
+                                    id="personas_a_cargo",
                                     type="text",
                                     className="form-control",
                                 ),
@@ -223,6 +255,8 @@ layout = html.Div(
     State("direccion_afectada", "value"),
     State("ubi", "value"),
     State("situacion_personal", "value"),
+    State("personas_a_cargo", "value"),
+    State("email", "value"),
     State("necesidad", "value"),
     prevent_initial_call=True,
 )
@@ -236,6 +270,8 @@ def guardar_solicitud(
     direccion_afectada,
     ubi,
     situacion_personal,
+    personas_a_cargo,
+    email,
     necesidad,
 ):
     if not n_clicks:
@@ -258,7 +294,7 @@ def guardar_solicitud(
 
     try:
         # Generar campos derivados
-        dia_alta = date.today().isoformat()
+        dia_alta = date.today().strftime("%Y-%m-%d")
         afectado = f"{apellidos.strip()}, {nombre.strip()}"
 
         new_afectado = {
@@ -274,6 +310,8 @@ def guardar_solicitud(
                 situacion_personal.strip() if situacion_personal else None
             ),
             "dia_visita": None,
+            "personas_a_cargo": personas_a_cargo.strip() if personas_a_cargo else None,
+            "email": email.strip() if email else None,
         }
 
         insert_afectado(new_afectado)

@@ -1,6 +1,10 @@
 import dash
 from dash import Input, Output, State, callback, dash_table, dcc, html
 from flask import session
+from dash.exceptions import PreventUpdate
+import unicodedata
+import pandas as pd
+from datetime import datetime
 from services.database.sqlite_db_handler import (
     fetch_afectados,
     insert_afectado,
@@ -9,18 +13,22 @@ from services.database.sqlite_db_handler import (
     delete_afectado,
 )
 from pages.components import navbar, register_navbar_callbacks
-import unicodedata
-import pandas as pd
-from datetime import datetime
 
 
 def remove_accents(text: str) -> str:
     replace_characters = {
-        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U'
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+        "Á": "A",
+        "É": "E",
+        "Í": "I",
+        "Ó": "O",
+        "Ú": "U",
     }
-    return ''.join(replace_characters.get(c, c) for c in text)
-
+    return "".join(replace_characters.get(c, c) for c in text)
 
 
 dash.register_page(__name__, path="/afectados", name="Afectados")
@@ -38,7 +46,7 @@ def display_afectados(_):
                     style={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontWeight": "700",
-                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "fontSize": "clamp(1.2rem, 4vw, 1.68rem)",
                         "color": "#2e7d32",
                         "marginBottom": "18px",
                         "letterSpacing": "1px",
@@ -46,6 +54,31 @@ def display_afectados(_):
                 ),
                 html.Div(
                     [
+                        # Popup de confirmación
+                        dcc.ConfirmDialog(
+                            id="afectados-delete-confirm",
+                            message=(
+                                "¿Seguro que quieres eliminar a este afectado o afectados? "
+                                "Esta acción NO se puede deshacer."
+                            ),
+                        ),
+                        # Botón de borrado
+                        html.Button(
+                            "🗑️ Eliminar afectados seleccionados",
+                            id="afectados-delete-button",
+                            n_clicks=0,
+                            style={
+                                "marginBottom": "10px",
+                                "backgroundColor": "#c62828",
+                                "color": "white",
+                                "border": "none",
+                                "padding": "8px 16px",
+                                "borderRadius": "6px",
+                                "cursor": "pointer",
+                                "fontFamily": "Montserrat, sans-serif",
+                                "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
+                            },
+                        ),
                         dash_table.DataTable(
                             id="afectados-table",
                             columns=[
@@ -57,9 +90,14 @@ def display_afectados(_):
                                 {
                                     "name": "Afectado",
                                     "id": "afectado",
-                                    "editable": False,
+                                    "editable": True,
                                 },
                                 {"name": "Teléfono", "id": "tlf", "editable": True},
+                                {
+                                    "name": "Email",
+                                    "id": "email",
+                                    "editable": True,
+                                },
                                 {
                                     "name": "Dirección afectada",
                                     "id": "direccion_afectada",
@@ -81,6 +119,11 @@ def display_afectados(_):
                                     "editable": True,
                                 },
                                 {
+                                    "name": "Personas a cargo",
+                                    "id": "personas_a_cargo",
+                                    "editable": True,
+                                },
+                                {
                                     "name": "Necesidad",
                                     "id": "necesidad",
                                     "editable": True,
@@ -90,10 +133,17 @@ def display_afectados(_):
                                     "id": "dia_visita",
                                     "editable": True,
                                 },
+                                {
+                                    "name": "Baja",
+                                    "id": "baja",
+                                    "type": "numeric",
+                                    "editable": True,
+                                },
                             ],
                             data=fetch_afectados(),
-                            row_deletable=True,
                             editable=True,
+                            row_selectable="multi",
+                            selected_rows=[],
                             filter_action="native",
                             filter_options={
                                 "placeholder_text": "filtrar por ...",
@@ -102,6 +152,7 @@ def display_afectados(_):
                             },
                             sort_action="native",
                             sort_mode="single",
+                            sort_by=[{"column_id": "dia_alta", "direction": "desc"}],
                             page_size=10,
                             style_table={
                                 "marginBottom": "20px",
@@ -114,7 +165,7 @@ def display_afectados(_):
                                 "color": "white",
                                 "fontWeight": "bold",
                                 "fontFamily": "Montserrat, sans-serif",
-                                "fontSize": "clamp(0.85rem, 2.5vw, 1.1rem)",
+                                "fontSize": "clamp(0.68rem, 2vw, 0.88rem)",
                                 "border": "none",
                                 "padding": "12px 8px",
                                 "whiteSpace": "normal",
@@ -123,7 +174,7 @@ def display_afectados(_):
                             },
                             style_cell={
                                 "fontFamily": "Montserrat, sans-serif",
-                                "fontSize": "clamp(0.8rem, 2vw, 1rem)",
+                                "fontSize": "clamp(0.64rem, 1.6vw, 0.8rem)",
                                 "padding": "10px 8px",
                                 "minWidth": "120px",
                                 "maxWidth": "300px",
@@ -134,11 +185,78 @@ def display_afectados(_):
                                 "lineHeight": "1.4",
                                 "textAlign": "left",
                             },
+                            style_cell_conditional=[
+                                # Día de alta
+                                {
+                                    "if": {"column_id": "dia_alta"},
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Teléfono
+                                {
+                                    "if": {"column_id": "tlf"},
+                                    "minWidth": "110px",
+                                    "width": "110px",
+                                    "maxWidth": "110px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Día de visita
+                                {
+                                    "if": {"column_id": "dia_visita"},
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Población
+                                {
+                                    "if": {"column_id": "poblacion"},
+                                    "minWidth": "120px",
+                                    "width": "120px",
+                                    "maxWidth": "120px",
+                                    "whiteSpace": "nowrap",
+                                    "overflow": "hidden",
+                                    "textOverflow": "ellipsis",
+                                },
+                                # Baja
+                                {
+                                    "if": {"column_id": "baja"},
+                                    "minWidth": "80px",
+                                    "width": "80px",
+                                    "maxWidth": "80px",
+                                    "textAlign": "center",
+                                    "whiteSpace": "nowrap",
+                                },
+                            ],
                             style_data_conditional=[
                                 {
                                     "if": {"state": "selected"},
                                     "backgroundColor": "#f2f7fa",
                                     "border": "1px solid #1976d2",
+                                },
+                                {
+                                    "if": {"state": "selected"},
+                                    "backgroundColor": "#f2f7fa",
+                                    "border": "1px solid #1976d2",
+                                },
+                                {
+                                    "if": {"filter_query": "{baja} = 1"},
+                                    "backgroundColor": "#eeeeee",
+                                    "color": "#757575",
+                                },
+                            ],
+                            css=[
+                                {
+                                    "selector": ".dash-table-container .Select-menu-outer",
+                                    "rule": "display: block !important; position: fixed !important; z-index: 9999;",
                                 }
                             ],
                             style_as_list_view=True,
@@ -153,7 +271,7 @@ def display_afectados(_):
                                 dcc.DatePickerSingle(
                                     id="new-afectado-dia-alta",
                                     placeholder="Día de alta",
-                                    display_format="DD/MM/YYYY",
+                                    display_format="YYYY-MM-DD",
                                     style={
                                         "width": "100%",
                                         "minWidth": "150px",
@@ -180,7 +298,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -202,7 +320,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -224,7 +342,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -246,7 +364,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -268,7 +386,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -290,7 +408,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -312,7 +430,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -334,7 +452,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -349,7 +467,7 @@ def display_afectados(_):
                                 dcc.DatePickerSingle(
                                     id="new-afectado-dia-visita",
                                     placeholder="Día de visita",
-                                    display_format="DD/MM/YYYY",
+                                    display_format="YYYY-MM-DD",
                                     style={
                                         "width": "100%",
                                         "minWidth": "150px",
@@ -360,6 +478,50 @@ def display_afectados(_):
                             ],
                             style={
                                 "flex": "1 1 150px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-personas-cargo",
+                                    type="text",
+                                    placeholder="Personas a cargo",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
+                                "minWidth": "150px",
+                                "marginBottom": "10px",
+                            },
+                        ),
+                        html.Div(
+                            [
+                                dcc.Input(
+                                    id="new-afectado-email",
+                                    type="email",
+                                    placeholder="Email",
+                                    style={
+                                        "width": "100%",
+                                        "height": "40px",
+                                        "borderRadius": "6px",
+                                        "border": "1px solid #bdbdbd",
+                                        "padding": "0 10px",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
+                                    },
+                                ),
+                            ],
+                            style={
+                                "flex": "1 1 180px",
                                 "minWidth": "150px",
                                 "marginBottom": "10px",
                             },
@@ -381,7 +543,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -408,7 +570,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -448,7 +610,7 @@ def display_afectados(_):
                     style={
                         "fontFamily": "Montserrat, sans-serif",
                         "fontWeight": "700",
-                        "fontSize": "clamp(1.5rem, 5vw, 2.1rem)",
+                        "fontSize": "clamp(1.2rem, 4vw, 1.68rem)",
                         "color": "#2e7d32",
                         "marginBottom": "18px",
                         "letterSpacing": "1px",
@@ -488,7 +650,7 @@ def display_afectados(_):
                                         "borderRadius": "6px",
                                         "border": "1px solid #bdbdbd",
                                         "padding": "0 10px",
-                                        "fontSize": "clamp(0.85rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.68rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -515,7 +677,7 @@ def display_afectados(_):
                                         "cursor": "pointer",
                                         "height": "44px",
                                         "boxShadow": "0 2px 8px #1976d233",
-                                        "fontSize": "clamp(0.9rem, 2vw, 1rem)",
+                                        "fontSize": "clamp(0.72rem, 1.6vw, 0.8rem)",
                                     },
                                 ),
                             ],
@@ -550,8 +712,28 @@ def display_afectados(_):
 
 
 @callback(
+    Output("afectados-delete-confirm", "displayed"),
+    Input("afectados-delete-button", "n_clicks"),
+    State("afectados-table", "selected_rows"),
+    prevent_initial_call=True,
+)
+def show_delete_confirm(n_clicks, selected_rows):
+    if not n_clicks:
+        raise PreventUpdate
+
+    # Si no hay filas seleccionadas, no mostramos el popup
+    if not selected_rows:
+        return False
+
+    # Hay al menos una fila seleccionada -> mostrar popup
+    return True
+
+
+@callback(
     Output("afectados-table", "data"),
+    Output("afectados-table", "selected_rows"),
     Input("add-afectado-btn", "n_clicks"),
+    Input("afectados-delete-confirm", "submit_n_clicks"),
     State("new-afectado-name", "value"),
     State("new-afectado-ubi", "value"),
     State("new-afectado-nec", "value"),
@@ -562,10 +744,16 @@ def display_afectados(_):
     State("new-afectado-poblacion", "value"),
     State("new-afectado-situacion", "value"),
     State("new-afectado-dia-visita", "date"),
+    State("new-afectado-personas-cargo", "value"),
+    State("new-afectado-email", "value"),
     State("afectados-table", "data"),
+    State("afectados-table", "selected_rows"),
+    State("afectados-table", "derived_virtual_data"),
+    State("afectados-table", "derived_virtual_selected_rows"),
 )
-def add_afectado(
-    n_clicks,
+def add_or_delete_afectado(
+    add_clicks,
+    delete_confirm_clicks,
     name,
     ubi,
     nec,
@@ -576,34 +764,77 @@ def add_afectado(
     poblacion,
     situacion,
     dia_visita,
+    personas_a_cargo,
+    email,
     rows,
+    selected_rows,
+    virtual_rows,
+    virtual_selected_rows,
 ):
-    from datetime import datetime
 
-    def format_date(date_str):
-        if date_str:
-            try:
-                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
-            except Exception:
-                return ""
-        return ""
+    if rows is None:
+        rows = []
 
-    if n_clicks > 0 and name:
-        new_row = {
-            "afectado": remove_accents(name),
-            "ubi": remove_accents(ubi),
-            "necesidad": nec,
-            "dni": dni,
-            "tlf": tlf,
-            "dia_alta": format_date(dia_alta),
-            "direccion_afectada": remove_accents(direccion),
-            "poblacion": remove_accents(poblacion),
-            "situacion_personal": situacion,
-            "dia_visita": format_date(dia_visita),
-        }
-        insert_afectado(new_row)
-        return fetch_afectados()
-    return rows
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return rows, selected_rows
+
+    triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    # 1) Alta de afectado
+    if triggered_id == "add-afectado-btn":
+        if add_clicks and name:
+            new_row = {
+                "afectado": remove_accents(name),
+                "ubi": remove_accents(ubi) if ubi else None,
+                "necesidad": nec,
+                "dni": dni,
+                "tlf": tlf,
+                "dia_alta": dia_alta,  # Guardar en formato ISO (YYYY-MM-DD)
+                "direccion_afectada": remove_accents(direccion) if direccion else None,
+                "poblacion": remove_accents(poblacion) if poblacion else None,
+                "situacion_personal": situacion,
+                "dia_visita": dia_visita,  # Guardar en formato ISO (YYYY-MM-DD)
+                "personas_a_cargo": personas_a_cargo,
+                "email": email,
+                # NUEVO: siempre entra como no de baja (0)
+                "baja": 0,
+            }
+            insert_afectado(new_row)
+            # Recargamos desde BD para traer id, baja, etc. coherentes
+            return fetch_afectados(), []
+        return rows, selected_rows
+
+    # 2) Borrado de afectados seleccionados (tras confirmar)
+    if triggered_id == "afectados-delete-confirm":
+        if not delete_confirm_clicks:
+            return rows, selected_rows
+
+        # Usar siempre los índices sobre derived_virtual_data,
+        # que son los correctos cuando hay sorting/filters
+        if not virtual_selected_rows:
+            return rows, selected_rows
+
+        data_for_indices = virtual_rows if virtual_rows is not None else rows
+
+        ids_to_delete: list[int] = []
+        for idx in virtual_selected_rows:
+            if 0 <= idx < len(data_for_indices):
+                rid = data_for_indices[idx].get("id")
+                if rid is not None:
+                    ids_to_delete.append(rid)
+
+        if not ids_to_delete:
+            return rows, selected_rows
+
+        # Borrado en BD
+        for afectado_id in ids_to_delete:
+            delete_afectado(afectado_id)
+
+        # Recargar desde BD tras borrar y resetear selected_rows
+        return fetch_afectados(), []
+
+    return rows, selected_rows
 
 
 def normalize_text(text):
@@ -661,6 +892,7 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     {"name": "Día de alta", "id": "dia_alta"},
                                     {"name": "Afectado", "id": "afectado"},
                                     {"name": "Teléfono", "id": "tlf"},
+                                    {"name": "Email", "id": "email"},
                                     {
                                         "name": "Dirección afectada",
                                         "id": "direccion_afectada",
@@ -670,6 +902,10 @@ def search_afectados_callback(n_clicks, criterio, valor):
                                     {
                                         "name": "Situación personal",
                                         "id": "situacion_personal",
+                                    },
+                                    {
+                                        "name": "Personas a cargo",
+                                        "id": "personas_a_cargo",
                                     },
                                     {"name": "Necesidad", "id": "necesidad"},
                                     {"name": "Día de visita", "id": "dia_visita"},
