@@ -731,6 +731,7 @@ def show_delete_confirm(n_clicks, selected_rows):
 
 @callback(
     Output("afectados-table", "data"),
+    Output("afectados-table", "selected_rows"),
     Input("add-afectado-btn", "n_clicks"),
     Input("afectados-delete-confirm", "submit_n_clicks"),
     State("new-afectado-name", "value"),
@@ -776,7 +777,7 @@ def add_or_delete_afectado(
 
     ctx = dash.callback_context
     if not ctx.triggered:
-        return rows
+        return rows, selected_rows
 
     triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
@@ -801,18 +802,18 @@ def add_or_delete_afectado(
             }
             insert_afectado(new_row)
             # Recargamos desde BD para traer id, baja, etc. coherentes
-            return fetch_afectados()
-        return rows
+            return fetch_afectados(), []
+        return rows, selected_rows
 
     # 2) Borrado de afectados seleccionados (tras confirmar)
     if triggered_id == "afectados-delete-confirm":
         if not delete_confirm_clicks:
-            return rows
+            return rows, selected_rows
 
         # Usar siempre los índices sobre derived_virtual_data,
         # que son los correctos cuando hay sorting/filters
         if not virtual_selected_rows:
-            return rows
+            return rows, selected_rows
 
         data_for_indices = virtual_rows if virtual_rows is not None else rows
 
@@ -824,16 +825,16 @@ def add_or_delete_afectado(
                     ids_to_delete.append(rid)
 
         if not ids_to_delete:
-            return rows
+            return rows, selected_rows
 
         # Borrado en BD
         for afectado_id in ids_to_delete:
             delete_afectado(afectado_id)
 
-        # Recargar desde BD tras borrar
-        return fetch_afectados()
+        # Recargar desde BD tras borrar y resetear selected_rows
+        return fetch_afectados(), []
 
-    return rows
+    return rows, selected_rows
 
 
 def normalize_text(text):
